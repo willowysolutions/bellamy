@@ -60,21 +60,21 @@ export const ProductFormDialog = ({
   const { execute: createProduct, isExecuting: isCreating } = useAction(createProductAction);
   const { execute: updateProduct, isExecuting: isUpdating } = useAction(updateProductAction);
 
-  const form = useForm<ProductFormValues>({
-    resolver: zodResolver(createProductSchema),
-    defaultValues: {
-      name: product?.name || "",
-      description: product?.description || "",
-      price: product?.price || undefined,
-      qty: product?.qty || undefined,
-      brandId: product?.brandId || "",
-      categoryId: product?.categoryId || "",
-      subcategoryId: product?.subCategoryId || "",
-      image: undefined as any, // only used for new upload
-      subimage: [] as any,     // only used for new upload
-      attributes: (product?.attributes as { key?: string; value?: string }[] | undefined) || [],
-    },
-  });
+ const form = useForm<ProductFormValues>({
+  resolver: zodResolver(createProductSchema),
+  defaultValues: {
+    name: product?.name || "",
+    description: product?.description || "",
+    price: product?.price || undefined,
+    qty: product?.qty || undefined,
+    brandId: product?.brandId || "",
+    categoryId: product?.categoryId || "",
+    subcategoryId: product?.subCategoryId || "",
+    image: undefined as any,
+    subimage: [] as any,
+    attributes: (product?.attributes as { key?: string; value?: string }[] | undefined) || [],
+  },
+});
   
   // ✅ Hydrate previews when editing
   useEffect(() => {
@@ -103,11 +103,11 @@ export const ProductFormDialog = ({
   const onSubmit = async (values: ProductFormValues) => {
     try {
       if (product) {
-        await updateProduct({ id: product.id, ...values });
-        toast.success("Product updated successfully");
+         updateProduct({ id: product.id, ...values });
+        toast.success("Product updating");
       } else {
-        await createProduct(values);
-        toast.success("Product added successfully");
+        createProduct(values);
+        toast.success("Product adding");
       }
       form.reset();
       setPreview(null);
@@ -121,13 +121,31 @@ export const ProductFormDialog = ({
     }
   };
 
+  // Helper functions for attributes
+  const addAttribute = () => {
+    const currentAttributes = form.getValues("attributes") || [];
+    form.setValue("attributes", [...currentAttributes, { key: "", value: "" }]);
+  };
+
+  const removeAttribute = (index: number) => {
+    const currentAttributes = form.getValues("attributes") || [];
+    form.setValue("attributes", currentAttributes.filter((_, i) => i !== index));
+  };
+
+  const updateAttribute = (index: number, field: "key" | "value", value: string) => {
+    const currentAttributes = form.getValues("attributes") || [];
+    const updatedAttributes = [...currentAttributes];
+    updatedAttributes[index] = { ...updatedAttributes[index], [field]: value };
+    form.setValue("attributes", updatedAttributes);
+  };
+
   return (
     <FormDialog
-      open={open}
-      openChange={openChange}
-      form={form}
-      onSubmit={onSubmit}
-    >
+    open={open}
+    openChange={openChange}
+    form={form}
+    onSubmit={onSubmit}
+  >
       <FormDialogTrigger asChild>
         <Button>
           <Plus className="size-4 mr-2" />
@@ -141,7 +159,7 @@ export const ProductFormDialog = ({
           <FormDialogDescription>
             {product
               ? "Update the product details"
-              : "Fill out the product details. Click save when you’re done."}
+              : "Fill out the product details. Click save when you're done."}
           </FormDialogDescription>
         </FormDialogHeader>
 
@@ -284,6 +302,62 @@ export const ProductFormDialog = ({
                   ))}
                 </SelectContent>
               </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Attributes */}
+        <FormField
+          control={form.control}
+          name="attributes"
+          render={() => (
+            <FormItem>
+              <div className="flex items-center justify-between">
+                <FormLabel>Product Attributes</FormLabel>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addAttribute}
+                >
+                  <Plus className="size-4 mr-1" />
+                  Add Attribute
+                </Button>
+              </div>
+              <div className="space-y-3">
+                {form.watch("attributes")?.map((attr, index) => (
+                  <div key={index} className="flex gap-2 items-start">
+                    <div className="flex-1">
+                      <Input
+                        placeholder="Attribute name (e.g., Color, Size)"
+                        value={attr.key || ""}
+                        onChange={(e) => updateAttribute(index, "key", e.target.value)}
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <Input
+                        placeholder="Attribute value (e.g., Red, Large)"
+                        value={attr.value || ""}
+                        onChange={(e) => updateAttribute(index, "value", e.target.value)}
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => removeAttribute(index)}
+                    >
+                      <X className="size-4" />
+                    </Button>
+                  </div>
+                ))}
+                {(!form.watch("attributes") || form.watch("attributes")?.length === 0) && (
+                  <p className="text-sm text-muted-foreground">
+                    No attributes added. Click "Add Attribute" to add product specifications.
+                  </p>
+                )}
+              </div>
               <FormMessage />
             </FormItem>
           )}
