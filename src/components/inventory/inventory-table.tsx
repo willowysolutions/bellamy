@@ -41,9 +41,6 @@ import Checkbox from "../ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 
 import { BatchUpdateDialog } from "./batch-update-dialog";
-
-// Extended Product type with relations
-// Inventory table rows represent variant-level aggregates with product relations
 export type ProductWithRelations = (Product & {
   brand: { id: string; name: string } | null;
   category: { id: string; name: string } | null;

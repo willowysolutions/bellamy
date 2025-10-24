@@ -5,6 +5,7 @@ import { SubCategory, Category } from "@prisma/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -34,8 +35,21 @@ export const SubcategoryDialogForm: FC<SubcategoryDialogFormProps> = ({
   const [categories, setCategories] = useState<Category[]>([]);
   const router = useRouter();
 
-  const { execute: create, isExecuting: isCreating } = useAction(createSubCategoryAction);
-  const { execute: updateSub, isExecuting: isUpdating } = useAction(updateSubCategoryAction);
+  const { 
+    execute: create, 
+    isExecuting: isCreating, 
+    hasSucceeded: hasCreated, 
+    hasErrored: hasCreatedError, 
+    result: createResult 
+  } = useAction(createSubCategoryAction);
+  
+  const { 
+    execute: updateSub, 
+    isExecuting: isUpdating,
+    hasSucceeded: hasUpdated,
+    hasErrored: hasUpdateError,
+    result: updateResult
+  } = useAction(updateSubCategoryAction);
 
   // Fetch categories for dropdown
   useEffect(() => {
@@ -57,17 +71,45 @@ export const SubcategoryDialogForm: FC<SubcategoryDialogFormProps> = ({
     },
   });
 
+  // Handle create responses
+  useEffect(() => {
+    if (hasCreated && createResult?.data) {
+      if (createResult.data.success) {
+        toast.success(createResult.data.message || "Subcategory created successfully");
+        form.reset();
+        router.refresh();
+        setOpen(false);
+      } else if (createResult.data.error) {
+        toast.error(createResult.data.error);
+      }
+    } else if (hasCreatedError) {
+      toast.error("Failed to create subcategory");
+      console.log('create error', createResult);
+    }
+  }, [hasCreated, hasCreatedError, createResult, form, router]);
+
+  // Handle update responses
+  useEffect(() => {
+    if (hasUpdated && updateResult?.data) {
+      if (updateResult.data.success) {
+        toast.success(updateResult.data.message || "Subcategory updated successfully");
+        form.reset();
+        router.refresh();
+        setOpen(false);
+      } else if (updateResult.data.error) {
+        toast.error(updateResult.data.error);
+      }
+    } else if (hasUpdateError) {
+      toast.error("Failed to update subcategory");
+      console.log('update error', updateResult);
+    }
+  }, [hasUpdated, hasUpdateError, updateResult, form, router]);
+
   const onSubmit = async (values: z.infer<typeof subcategorySchema>) => {
-    try {
-      if (!subcategory) await create(values);
-      if (subcategory) await updateSub({ id: subcategory.id, ...values });
-      router.refresh();
-      toast.success(`Subcategory ${subcategory ? "updated" : "added"} successfully`);
-    } catch {
-      toast.error("Failed to save subcategory");
-    } finally {
-      setOpen(false);
-      form.reset();
+    if (!subcategory) {
+      create(values);
+    } else {
+      updateSub({ id: subcategory.id, ...values });
     }
   };
 
@@ -84,29 +126,57 @@ export const SubcategoryDialogForm: FC<SubcategoryDialogFormProps> = ({
         </DialogHeader>
         <DialogDescription>Fill subcategory details below.</DialogDescription>
 
-        <form className="space-y-4 mt-2" onSubmit={form.handleSubmit(onSubmit)}>
-          {/* Name */}
-          <Input {...form.register("name")} placeholder="Subcategory Name" />
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Name</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="Subcategory Name" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          {/* Category Dropdown */}
-          <Select onValueChange={(val) => form.setValue("categoryId", val)} value={form.watch("categoryId")}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select Category" />
-            </SelectTrigger>
-            <SelectContent>
-              {categories.map((cat) => (
-                <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            <FormField
+              control={form.control}
+              name="categoryId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Category</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Category" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {categories.map((cat) => (
+                        <SelectItem key={cat.id} value={cat.id}>
+                          {cat.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline">Cancel</Button>
-            </DialogClose>
-            <Button type="submit">{isCreating || isUpdating ? "Loading..." : "Save"}</Button>
-          </DialogFooter>
-        </form>
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button variant="outline">Cancel</Button>
+              </DialogClose>
+              <Button type="submit" disabled={isCreating || isUpdating}>
+                {isCreating || isUpdating ? "Loading..." : "Save"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );

@@ -15,23 +15,38 @@ export const createSubCategoryAction = actionClient
   .inputSchema(createSubCategorySchema)
   .action(async ({ parsedInput }) => {
     try {
-            await getAuthenticatedAdmin()
+      await getAuthenticatedAdmin();
 
-      const existing = await prisma.subCategory.findFirst({ where: { name: { equals: parsedInput.name, mode: "insensitive" } } });
-      if(existing){
-        throw new Error("SubCategory with this name already exists");
+      const existing = await prisma.subCategory.findFirst({ 
+        where: { name: { equals: parsedInput.name, mode: "insensitive" } } 
+      });
+      
+      if (existing) {
+        return {
+          success: false,
+          error: "SubCategory with this name already exists"
+        };
       }
+      
       const subcategory = await prisma.subCategory.create({
         data: {
           name: parsedInput.name,
           categoryId: parsedInput.categoryId,
         },
       });
-      revalidatePath('/subcategories'); // adjust path to your UI
-      return { success: true, data: subcategory, message: 'SubCategory added successfully' };
+      
+      revalidatePath('/subcategories');
+      return { 
+        success: true, 
+        data: subcategory, 
+        message: 'SubCategory added successfully' 
+      };
     } catch (error) {
       console.error(error);
-      throw new Error("Failed to add SubCategory");
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to add SubCategory"
+      };
     }
   });
 
@@ -56,11 +71,19 @@ export const updateSubCategoryAction = actionClient
   .action(async ({ parsedInput }) => {
     const { id, ...data } = parsedInput;
     try {
-            await getAuthenticatedAdmin()
-      const existing = await prisma.subCategory.findFirst({ where: { name: { equals: data.name, mode: "insensitive" } } });
-      if(existing && existing.id !== id){
-        throw new Error("Another SubCategory with this name already exists");
+      await getAuthenticatedAdmin();
+      
+      const existing = await prisma.subCategory.findFirst({ 
+        where: { name: { equals: data.name, mode: "insensitive" } } 
+      });
+      
+      if (existing && existing.id !== id) {
+        return {
+          success: false,
+          error: "Another SubCategory with this name already exists"
+        };
       }
+      
       const updated = await prisma.subCategory.update({
         where: { id },
         data: {
@@ -68,11 +91,19 @@ export const updateSubCategoryAction = actionClient
           categoryId: data.categoryId,
         },
       });
+      
       revalidatePath('/subcategories');
-      return { success: true, data: updated, message: 'SubCategory updated successfully' };
+      return { 
+        success: true, 
+        data: updated, 
+        message: 'SubCategory updated successfully' 
+      };
     } catch (error) {
       console.error(error);
-      throw new Error("Failed to update SubCategory");
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to update SubCategory"
+      };
     }
   });
 
@@ -81,14 +112,18 @@ export const deleteSubCategoryAction = actionClient
   .inputSchema(deleteSubCategorySchema)
   .action(async ({ parsedInput }) => {
     try {
-            await getAuthenticatedAdmin()
-      // Optional: check if any product is using this subcategory
+      await getAuthenticatedAdmin();
+      
+      // Check if any product is using this subcategory
       const productUsingSubCategory = await prisma.product.findFirst({
         where: { subCategoryId: parsedInput.id },
       });
 
       if (productUsingSubCategory) {
-        throw new Error("Cannot delete: SubCategory is used in one or more products.");
+        return {
+          success: false,
+          error: "Cannot delete: SubCategory is used in one or more products."
+        };
       }
 
       await prisma.subCategory.delete({
@@ -96,9 +131,15 @@ export const deleteSubCategoryAction = actionClient
       });
 
       revalidatePath('/subcategories');
-      return { success: true, message: 'SubCategory deleted successfully' };
+      return { 
+        success: true, 
+        message: 'SubCategory deleted successfully' 
+      };
     } catch (error) {
       console.error("Delete SubCategory Error:", error);
-      throw new Error("Failed to delete SubCategory");
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to delete SubCategory"
+      };
     }
   });

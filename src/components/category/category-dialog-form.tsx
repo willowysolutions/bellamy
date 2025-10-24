@@ -54,8 +54,21 @@ export const CategoryDialogForm: FC<CategoryDialogFormProps> = ({
   const [preview, setPreview] = useState<string | null>(category?.image || null);
   const router = useRouter();
 
-  const { execute: create, isExecuting: isCreating } = useAction(createCategoryAction);
-  const { execute: updateCategory, isExecuting: isUpdating } = useAction(updateCategoryAction);
+  const { 
+    execute: create, 
+    isExecuting: isCreating, 
+    hasSucceeded: hasCreated, 
+    hasErrored: hasCreatedError, 
+    result: createResult 
+  } = useAction(createCategoryAction);
+  
+  const { 
+    execute: updateCategory, 
+    isExecuting: isUpdating,
+    hasSucceeded: hasUpdated,
+    hasErrored: hasUpdateError,
+    result: updateResult
+  } = useAction(updateCategoryAction);
 
   useEffect(() => onOpenChange?.(open), [open, onOpenChange]);
 
@@ -66,31 +79,56 @@ export const CategoryDialogForm: FC<CategoryDialogFormProps> = ({
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof categorySchema>) => {
-    try {
-      const formData = new FormData();
-      formData.append("name", values.name);
-      if (values.image) formData.append("image", values.image);
-
-      if (!category) {
-        if (!values.image) {
-          toast.error("Image is required when adding a new category");
-          return;
-        }
-        await create(formData);
-        toast.success("Category added successfully");
-      } else {
-        formData.append("id", category.id);
-        await updateCategory(formData);
-        toast.success("Category updated successfully");
+  // Handle create responses
+  useEffect(() => {
+    if (hasCreated && createResult?.data) {
+      if (createResult.data.success) {
+        toast.success(createResult.data.message || "Category created successfully");
+        form.reset();
+        setPreview(null);
+        router.refresh();
+        setOpen(false);
+      } else if (createResult.data.error) {
+        toast.error(createResult.data.error);
       }
+    } else if (hasCreatedError) {
+      toast.error("Failed to create category");
+      console.log('create error', createResult);
+    }
+  }, [hasCreated, hasCreatedError, createResult, form, router]);
 
-      form.reset();
-      setPreview(null);
-      router.refresh();
-      setOpen(false);
-    } catch {
-      toast.error("Failed to save category");
+  // Handle update responses
+  useEffect(() => {
+    if (hasUpdated && updateResult?.data) {
+      if (updateResult.data.success) {
+        toast.success(updateResult.data.message || "Category updated successfully");
+        form.reset();
+        setPreview(null);
+        router.refresh();
+        setOpen(false);
+      } else if (updateResult.data.error) {
+        toast.error(updateResult.data.error);
+      }
+    } else if (hasUpdateError) {
+      toast.error("Failed to update category");
+      console.log('update error', updateResult);
+    }
+  }, [hasUpdated, hasUpdateError, updateResult, form, router]);
+
+  const onSubmit = async (values: z.infer<typeof categorySchema>) => {
+    const formData = new FormData();
+    formData.append("name", values.name);
+    if (values.image) formData.append("image", values.image);
+
+    if (!category) {
+      if (!values.image) {
+        toast.error("Image is required when adding a new category");
+        return;
+      }
+      create(formData);
+    } else {
+      formData.append("id", category.id);
+      updateCategory(formData);
     }
   };
 
@@ -134,7 +172,7 @@ export const CategoryDialogForm: FC<CategoryDialogFormProps> = ({
                       type="file"
                       accept="image/*"
                       {...rest}
-                      value={undefined} // file input cannot have value
+                      value={undefined}
                       onChange={(e) => {
                         const file = e.target.files?.[0];
                         if (file) {
