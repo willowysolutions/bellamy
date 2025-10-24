@@ -1,3 +1,4 @@
+//product/[id]/page.tsx
 import ProductDetails from '@/components/product/product-detail'
 import React from 'react'
 
