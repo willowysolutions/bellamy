@@ -44,10 +44,14 @@ export default function VariationsPage() {
     if (!newAttrName.trim()) return;
     setIsLoading(true);
     try {
-      await createAttribute(newAttrName.trim());
-      setNewAttrName("");
-      await refresh();
-      toast.success("Attribute created successfully");
+      const result = await createAttribute(newAttrName.trim());
+      if (result.success) {
+        setNewAttrName("");
+        await refresh();
+        toast.success("Attribute created successfully");
+      } else {
+        toast.error(result.error || "Failed to create attribute");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -55,33 +59,55 @@ export default function VariationsPage() {
 
   const handleRenameAttribute = async (id: string, name: string) => {
     if (!name.trim()) return;
-    await updateAttribute(id, name.trim());
-    await refresh();
-    toast.success("Attribute updated successfully");
+    const result = await updateAttribute(id, name.trim());
+    if (result.success) {
+      await refresh();
+      toast.success("Attribute updated successfully");
+    } else {
+      toast.error(result.error || "Failed to update attribute");
+    }
   };
 
   const handleDeleteAttribute = async (id: string) => {
-    await deleteAttribute(id);
-    await refresh();
+    const result = await deleteAttribute(id);
+    if (result.success) {
+      await refresh();
+    } else {
+      // Throw error so DeleteDialog can catch and display it
+      throw new Error(result.error || "Failed to delete attribute");
+    }
   };
 
   const handleAddValue = async (attributeId: string, value: string) => {
     if (!value.trim()) return;
-    await createAttributeValue(attributeId, value.trim());
-    await refresh();
-    toast.success("Value added successfully");
+    const result = await createAttributeValue(attributeId, value.trim());
+    if (result.success) {
+      await refresh();
+      toast.success("Value added successfully");
+    } else {
+      toast.error(result.error || "Failed to add value");
+    }
   };
 
   const handleUpdateValue = async (id: string, value: string) => {
     if (!value.trim()) return;
-    await updateAttributeValue(id, value.trim());
-    await refresh();
-    toast.success("Value updated successfully");
+    const result = await updateAttributeValue(id, value.trim());
+    if (result.success) {
+      await refresh();
+      toast.success("Value updated successfully");
+    } else {
+      toast.error(result.error || "Failed to update value");
+    }
   };
 
   const handleDeleteValue = async (id: string) => {
-    await deleteAttributeValue(id);
-    await refresh();
+    const result = await deleteAttributeValue(id);
+    if (result.success) {
+      await refresh();
+    } else {
+      // Throw error so DeleteDialog can catch and display it
+      throw new Error(result.error || "Failed to delete value");
+    }
   };
 
   return (

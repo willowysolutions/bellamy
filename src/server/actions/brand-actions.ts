@@ -15,21 +15,37 @@ export const createBrandAction = actionClient
   .inputSchema(createBrandSchema)
   .action(async ({ parsedInput }) => {
     try {
-      await getAuthenticatedAdmin()
-      const existing = await prisma.brand.findFirst({ where: { name: { equals: parsedInput.name, mode: "insensitive" } } });
-      if(existing){
-        throw new Error("Brand with this name already exists");
+      await getAuthenticatedAdmin();
+      
+      const existing = await prisma.brand.findFirst({ 
+        where: { name: { equals: parsedInput.name, mode: "insensitive" } } 
+      });
+      
+      if (existing) {
+        return {
+          success: false,
+          error: "Brand with this name already exists"
+        };
       }
+      
       const brand = await prisma.brand.create({
         data: {
           name: parsedInput.name,
         },
       });
-      revalidatePath('/brand'); // adjust path according to your UI
-      return { success: true, data: brand, message: 'Brand added successfully' };
+      
+      revalidatePath('/brand');
+      return { 
+        success: true, 
+        data: brand, 
+        message: 'Brand added successfully' 
+      };
     } catch (error) {
       console.error(error);
-      throw new Error("Failed to add brand");
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to add brand"
+      };
     }
   });
 
@@ -45,23 +61,38 @@ export const updateBrandAction = actionClient
   .action(async ({ parsedInput }) => {
     const { id, ...data } = parsedInput;
     try {
-            await getAuthenticatedAdmin()
+      await getAuthenticatedAdmin();
 
-            const existing = await prisma.brand.findFirst({ where: { name: { equals: data.name, mode: "insensitive" } } });
-      if(existing && existing.id !== id){
-        throw new Error("Another brand with this name already exists");
+      const existing = await prisma.brand.findFirst({ 
+        where: { name: { equals: data.name, mode: "insensitive" } } 
+      });
+      
+      if (existing && existing.id !== id) {
+        return {
+          success: false,
+          error: "Another brand with this name already exists"
+        };
       }
+      
       const updated = await prisma.brand.update({
         where: { id },
         data: {
           name: data.name,
         },
       });
-      revalidatePath('/brand'); // adjust path according to your UI
-      return { success: true, data: updated, message: 'Brand updated successfully' };
+      
+      revalidatePath('/brand');
+      return { 
+        success: true, 
+        data: updated, 
+        message: 'Brand updated successfully' 
+      };
     } catch (error) {
       console.error(error);
-      throw new Error("Failed to update brand");
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to update brand"
+      };
     }
   });
 
@@ -70,25 +101,34 @@ export const deleteBrandAction = actionClient
   .inputSchema(deleteBrandSchema)
   .action(async ({ parsedInput }) => {
     try {
-            await getAuthenticatedAdmin()
+      await getAuthenticatedAdmin();
 
-      // Optional: check if any product is using this brand
+      // Check if any product is using this brand
       const productUsingBrand = await prisma.product.findFirst({
         where: { brandId: parsedInput.id },
       });
 
       if (productUsingBrand) {
-        throw new Error("Cannot delete: Brand is used in one or more products.");
+        return {
+          success: false,
+          error: "Cannot delete: Brand is used in one or more products."
+        };
       }
 
       await prisma.brand.delete({
         where: { id: parsedInput.id },
       });
 
-      revalidatePath('/brand'); // adjust path according to your UI
-      return { success: true, message: 'Brand deleted successfully' };
+      revalidatePath('/brand');
+      return { 
+        success: true, 
+        message: 'Brand deleted successfully' 
+      };
     } catch (error) {
       console.error("Delete Brand Error:", error);
-      throw new Error("Failed to delete brand");
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to delete brand"
+      };
     }
   });
