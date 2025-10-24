@@ -34,7 +34,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { ProductDetail } from "@/types/product";
-import { ProductFormDialog } from "@/components/product/product-dialog-form";
+import { ProductDialogForm  } from "@/components/product/product-dialog-form";
 
 interface Category {
   id: string;
@@ -284,7 +284,7 @@ export default function ProductTable({ columns }: ProductTableProps) {
               <h1 className="text-2xl font-bold tracking-tight">Products</h1>
               <p className="text-muted-foreground">Manage Products</p>
             </div>
-            <ProductFormDialog />
+            <ProductDialogForm  />
           </div>
           <Card>
             <CardContent className="p-6">
@@ -315,7 +315,7 @@ export default function ProductTable({ columns }: ProductTableProps) {
               <h1 className="text-2xl font-bold tracking-tight">Products</h1>
               <p className="text-muted-foreground">Manage Products</p>
             </div>
-            <ProductFormDialog />
+            <ProductDialogForm />
           </div>
 
           {/* Search and Filters */}

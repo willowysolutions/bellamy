@@ -1,7 +1,7 @@
 "use client";
 
 import { ProductDetail } from "@/types/product";
-import { ProductFormDialog } from "./product-dialog-form";
+import { ProductDialogForm  } from "./product-dialog-form";
 import { ProductDeleteDialog } from "./delete-product-dialog";
 
 import { useAction } from "next-safe-action/hooks";
@@ -193,10 +193,10 @@ export const ProductDropdownMenu = ({ product }: { product: ProductDetail }) => 
       </DropdownMenu>
 
       {/* Edit Dialog */}
-      <ProductFormDialog
-        product={product}
-        open={openEdit}
-        openChange={setOpenEdit}
+      <ProductDialogForm 
+       productId={product.id}
+        // open={openEdit}
+        // openChange={setOpenEdit}
       />
 
       {/* Delete Dialog */}
