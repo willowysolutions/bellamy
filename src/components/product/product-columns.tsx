@@ -1,7 +1,6 @@
 "use client";
 
 import { ProductDetail } from "@/types/product";
-import { ProductDialogForm  } from "./product-dialog-form";
 import { ProductDeleteDialog } from "./delete-product-dialog";
 
 import { useAction } from "next-safe-action/hooks";
@@ -137,12 +136,11 @@ export const productColumns: ColumnDef<ProductDetail>[] = [
 
 export const ProductDropdownMenu = ({ product }: { product: ProductDetail }) => {
   const [openDelete, setOpenDelete] = useState(false);
-  const [openEdit, setOpenEdit] = useState(false);
   const [openAddVariant, setOpenAddVariant] = useState(false);
   const router = useRouter();
 
   const handleEditClick = () => {
-    setOpenEdit(true);
+    router.push(`/admin/products/edit-product/${product.id}`);
   };
 
   const handleDeleteClick = () => {
@@ -192,12 +190,7 @@ export const ProductDropdownMenu = ({ product }: { product: ProductDetail }) => 
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* Edit Dialog */}
-      <ProductDialogForm 
-       productId={product.id}
-        // open={openEdit}
-        // openChange={setOpenEdit}
-      />
+      
 
       {/* Delete Dialog */}
       <ProductDeleteDialog

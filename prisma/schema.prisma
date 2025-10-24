@@ -43,7 +43,7 @@ model Product {
   id            String   @id @default(auto()) @map("_id") @db.ObjectId
   name          String
   description   String?
-  image         String // Single main product image
+  image         String 
   brandId       String?  @db.ObjectId
   categoryId    String?  @db.ObjectId
   subCategoryId String?  @db.ObjectId
@@ -58,12 +58,12 @@ model Product {
   notifications Notification[]
 }
 
-// Individual Variant (e.g., "Red - Large")
 model ProductVariant {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   productId String   @db.ObjectId
   sku       String   @unique // Unique SKU for this variant
   price     Float
+  offerPrice Float?
   qty       Int      @default(0)
   images    String[] // Array of images for this variant (at least one required)
   createdAt DateTime @default(now())
