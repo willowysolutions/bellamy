@@ -4,7 +4,7 @@ import React, { useEffect, useState, ChangeEvent } from 'react';
 import Image from 'next/image';
 import { getProductById } from '@/server/actions/product-action'; 
 import { ProductDeleteDialog } from './delete-product-dialog'; 
-import { ProductFormDialog } from './product-dialog-form'; 
+import { ProductDialogForm  } from './product-dialog-form'; 
 import { Button } from '@/components/ui/button';
 import { 
   Card, 
@@ -257,10 +257,10 @@ export default function ProductDetailPage({ id }: ProductDetailProps) {
       
       
       {/* Modals for Update and Delete */}
-      <ProductFormDialog
-        product={product}
-        open={isUpdateDialogOpen}
-        openChange={setIsUpdateDialogOpen}
+      <ProductDialogForm 
+       productId={product.id}
+        // open={isUpdateDialogOpen}
+        // openChange={setIsUpdateDialogOpen}
       />
       <ProductDeleteDialog
         product={product}
