@@ -16,7 +16,11 @@ export const createSubCategoryAction = actionClient
   .action(async ({ parsedInput }) => {
     try {
             await getAuthenticatedAdmin()
-      
+
+      const existing = await prisma.subCategory.findFirst({ where: { name: { equals: parsedInput.name, mode: "insensitive" } } });
+      if(existing){
+        throw new Error("SubCategory with this name already exists");
+      }
       const subcategory = await prisma.subCategory.create({
         data: {
           name: parsedInput.name,
@@ -53,6 +57,10 @@ export const updateSubCategoryAction = actionClient
     const { id, ...data } = parsedInput;
     try {
             await getAuthenticatedAdmin()
+      const existing = await prisma.subCategory.findFirst({ where: { name: { equals: data.name, mode: "insensitive" } } });
+      if(existing && existing.id !== id){
+        throw new Error("Another SubCategory with this name already exists");
+      }
       const updated = await prisma.subCategory.update({
         where: { id },
         data: {

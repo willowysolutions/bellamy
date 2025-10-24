@@ -16,6 +16,10 @@ export const createBrandAction = actionClient
   .action(async ({ parsedInput }) => {
     try {
       await getAuthenticatedAdmin()
+      const existing = await prisma.brand.findFirst({ where: { name: { equals: parsedInput.name, mode: "insensitive" } } });
+      if(existing){
+        throw new Error("Brand with this name already exists");
+      }
       const brand = await prisma.brand.create({
         data: {
           name: parsedInput.name,
@@ -43,6 +47,10 @@ export const updateBrandAction = actionClient
     try {
             await getAuthenticatedAdmin()
 
+            const existing = await prisma.brand.findFirst({ where: { name: { equals: data.name, mode: "insensitive" } } });
+      if(existing && existing.id !== id){
+        throw new Error("Another brand with this name already exists");
+      }
       const updated = await prisma.brand.update({
         where: { id },
         data: {

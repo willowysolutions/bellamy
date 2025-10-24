@@ -35,11 +35,17 @@ export const createCategoryAction = actionClient
             await getAuthenticatedAdmin()
       
       let photoUrl: string = "";
+      console.log("started")
       if (parsedInput.image && parsedInput.image.size > 0) {
         photoUrl = await uploadPhoto(parsedInput.image);
       }
       if (!photoUrl) throw new Error("Image is required");
 
+      const existing = await prisma.category.findFirst({ where: { name: parsedInput.name } });
+      if (existing) {
+        console.log('Category already exist')
+        throw new Error("Category with this name already exists");
+      }
       const category = await prisma.category.create({
         data: {
           name: parsedInput.name,
@@ -73,6 +79,10 @@ export const updateCategoryAction = actionClient
         photoUrl = await uploadPhoto(parsedInput.image);
       }
 
+      const existing = await prisma.category.findFirst({ where: { name: { equals: parsedInput.name, mode: "insensitive" } } });
+      if (existing && existing.id !== parsedInput.id) {
+        throw new Error("Another category with this name already exists");
+      }
       const updated = await prisma.category.update({
         where: { id: parsedInput.id },
         data: {

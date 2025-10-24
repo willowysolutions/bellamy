@@ -21,6 +21,10 @@ export async function getAttributesWithValues() {
 export async function createAttribute(name: string) {
   try{
     await getAuthenticatedAdmin();
+    const existing = await prisma.attribute.findFirst({ where: { name :{equals: name, mode: "insensitive"} }  });
+    if(existing){
+      throw new Error("Attribute with this name already exists");
+    }
     return prisma.attribute.create({ data: { name } });
   }catch(e){
     console.log("Error creating attribute:", e);
@@ -32,6 +36,10 @@ export async function createAttribute(name: string) {
 export async function updateAttribute(id: string, name: string) {
   try{
     await getAuthenticatedAdmin();
+    const existing = await prisma.attribute.findFirst({ where: { name :{equals: name, mode: "insensitive"} }  });
+    if(existing && existing.id !== id){
+      throw new Error("Another attribute with this name already exists");
+    }
     return prisma.attribute.update({ where: { id }, data: { name } });
   }catch(e){
     console.log("Error updating attribute:", e);

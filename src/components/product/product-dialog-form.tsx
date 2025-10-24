@@ -42,10 +42,12 @@ export const ProductFormDialog = ({
   product,
   open,
   openChange,
+  onSuccessProp
 }: {
   product?: ProductDetail;
   open?: boolean;
   openChange?: (open: boolean) => void;
+  onSuccessProp?: () => void;
 }) => {
   const [brands, setBrands] = useState<{ id: string; name: string }[]>([]);
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
@@ -61,6 +63,7 @@ export const ProductFormDialog = ({
       setPreview(null);
       router.refresh();
       openChange?.(false); // Close modal on success
+      onSuccessProp?.();
     },
     onError: (error) => {
       console.error("Create product error:", error);
@@ -358,9 +361,6 @@ export const ProductFormDialog = ({
             </FormItem>
           )}
         />
-
-        {/* Sub Images removed; variant images live on variants */}
-
         <FormDialogFooter>
           <DialogClose asChild>
             <Button type="button" variant="outline">

@@ -73,6 +73,10 @@ export const CategoryDialogForm: FC<CategoryDialogFormProps> = ({
       if (values.image) formData.append("image", values.image);
 
       if (!category) {
+        if (!values.image) {
+          toast.error("Image is required when adding a new category");
+          return;
+        }
         await create(formData);
         toast.success("Category added successfully");
       } else {
@@ -124,7 +128,7 @@ export const CategoryDialogForm: FC<CategoryDialogFormProps> = ({
               name="image"
               render={({ field: { onChange, ...rest } }) => (
                 <FormItem>
-                  <FormLabel>Image</FormLabel>
+                  <FormLabel>Image {!category && "*"}</FormLabel>
                   <FormControl>
                     <Input
                       type="file"
