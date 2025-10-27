@@ -3,7 +3,7 @@
 import { actionClient } from "@/lib/safe-action";
 import { prisma } from "@/lib/prisma";
 import uploadPhoto from "@/lib/upload";
-import { createVariantSchema, updateVariantSchema, deleteVariantSchema } from "@/schema/variant-schema";
+import { createVariantSchema, updateVariantSchema, deleteVariantSchema, createVariantsSchema } from "@/schema/variant-schema";
 import { Prisma } from "@prisma/client";
 import { getAuthenticatedAdmin } from "./admin-user-action";
 
@@ -81,6 +81,8 @@ export const createVariantAction = actionClient
     return { success: false, data: null };
   }
   });
+
+
 
 export const updateVariantAction = actionClient
   .inputSchema(updateVariantSchema)

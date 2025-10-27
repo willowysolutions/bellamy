@@ -23,6 +23,46 @@ export async function getAttributesWithValues() {
   }));
 }
 
+
+export async function getAttributesList() {
+ try {
+    const attrs = await prisma.attribute.findMany({
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+    });
+    return {
+      success: true,
+      data: attrs,
+    };
+  } catch (e) {
+    console.log("Error fetching attributes list:", e);
+    return {
+      success: false,
+      error: e instanceof Error ? e.message : "Failed to fetch attributes list"
+    };
+  }
+}
+
+export async function getAttributeValues(attributeId: string) {
+  try {
+    const values = await prisma.attributeValue.findMany({
+      where: { attributeId },
+      select: { id: true, value: true },
+      orderBy: { value: "asc" },
+    });
+    return {
+      success: true,
+      data: values,
+    };
+  } catch (e) {
+    console.log("Error fetching attribute values:", e);
+    return {
+      success: false,
+      error: e instanceof Error ? e.message : "Failed to fetch attribute values"
+    };
+  }
+}
+
 // Create a new attribute
 export async function createAttribute(name: string): Promise<ActionResult> {
   try {

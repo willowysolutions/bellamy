@@ -163,7 +163,6 @@ export default function InvenotryTable({
         limit: pagination.pageSize.toString(),
       });
 
-      // Convert "all" → "" for API call
       if (search !== "all") params.append("search", search);
       if (selectedCategory !== "all")
         params.append("categoryId", selectedCategory);

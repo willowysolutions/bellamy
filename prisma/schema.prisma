@@ -61,11 +61,11 @@ model Product {
 model ProductVariant {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   productId String   @db.ObjectId
-  sku       String   @unique // Unique SKU for this variant
+  sku       String   @unique
   price     Float
   offerPrice Float?
   qty       Int      @default(0)
-  images    String[] // Array of images for this variant (at least one required)
+  images    String[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

@@ -32,6 +32,25 @@ export const createVariantSchema = zfd.formData({
   })).optional(),
 });
 
+
+export const createVariantsSchema = zfd.formData({
+  productId: zfd.text(z.string().min(1, "Product ID is required")),
+  variants: zfd.text(z.string().transform((val) => {
+      const parsed = JSON.parse(val);
+      return z.array(z.object({
+        price: z.number(),
+        qty: z.number(),
+        offerPrice: z.number().optional(),
+        images: z.array(z.instanceof(File)),
+        options: z.array(z.object({
+          attributeId: z.string(),
+          valueId: z.string(),
+        })),
+      })).parse(parsed);
+  })),
+});
+
+
 export const updateVariantSchema = zfd.formData({
   id: zfd.text(z.string().min(1, "Variant id is required")),
   sku: zfd.text(z.string().min(1)).optional(),
@@ -45,4 +64,4 @@ export const deleteVariantSchema = z.object({ id: z.string().min(1) });
 
 export type CreateVariantValues = z.infer<typeof createVariantSchema>;
 export type UpdateVariantValues = z.infer<typeof updateVariantSchema>;
-
+export type CreateVariantsValues = z.infer<typeof createVariantsSchema>;

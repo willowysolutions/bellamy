@@ -25,6 +25,7 @@ type Cart = {
     variant: {
       id: string;
       price: number;
+      offerPrice?: number | null;
       product: {
         id: string;
         name: string;
@@ -80,7 +81,7 @@ export default function CartComponent() {
 
   const total =
     cart?.items?.reduce(
-      (sum, item) => sum + (item.variant?.price || 0) * item.quantity,
+      (sum, item) => sum + (item.variant?.offerPrice || item.variant?.price || 0) * item.quantity,
       0
     ) || 0;
 
@@ -153,11 +154,11 @@ export default function CartComponent() {
                     {item.variant.product.name}
                   </h3>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Rs. {item.variant.price}
+                    Rs. {item.variant.offerPrice ?? item.variant.price}
                   </p>
                   <p className="text-sm font-medium mt-2">
                     Total: Rs.{" "}
-                    {((item.variant?.price || 0) * item.quantity).toFixed(2)}
+                    {((item.variant?.offerPrice || item.variant?.price || 0) * item.quantity).toFixed(2)}
                   </p>
                 </div>
               </div>
@@ -225,7 +226,7 @@ export default function CartComponent() {
                     {item.variant.product.name}
                   </h3>
                   <p className="text-sm text-muted-foreground">
-                    Rs. {item.variant.price}
+                    Rs. {item.variant.offerPrice || item.variant.price}
                   </p>
                 </div>
               </div>
@@ -269,7 +270,7 @@ export default function CartComponent() {
 
               {/* Total */}
               <div className="col-span-3 text-right font-medium">
-                Rs. {((item.variant?.price || 0) * item.quantity).toFixed(2)}
+                Rs. {((item.variant?.offerPrice || item.variant?.price || 0) * item.quantity).toFixed(2)}
               </div>
             </div>
           </div>
@@ -302,7 +303,7 @@ export default function CartComponent() {
           products={cart.items.map((item) => ({
             id: item.variantId,
             name: item.variant.product.name,
-            price: item.variant.price,
+            price: item.variant.offerPrice || item.variant.price,
             quantity: item.quantity,
             image: item.variant.product.image ?? undefined,
           }))}

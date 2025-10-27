@@ -16,7 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getCategorylistForDropdown } from '@/server/actions/category-actions';
 import { getSubCategorylistByCategory } from '@/server/actions/subcategory-actions';
 import { getBrandlistForDropdown } from '@/server/actions/brand-actions';
-import { useConfigurableProduct } from '@/context/ConfigurableProductContext';
+import { useEditProduct } from '@/context/EcitProductContext';
 import { toast } from 'sonner';
 
 interface Category {
@@ -36,10 +36,8 @@ interface Brand {
 
 const MAX_THUMBNAILS = 3;
 
-function ProductImageAndCategories() {
-  const { baseProduct, updateBaseProduct } = useConfigurableProduct();
-  const [mainImagePreview, setMainImagePreview] = useState<string | null>(null);
-  const [thumbnailPreviews, setThumbnailPreviews] = useState<string[]>([]);
+export default function EditProductImageAndCategories() {
+  const { baseProduct, updateBaseProduct, isFileImage } = useEditProduct();
   const [categories, setCategories] = useState<Category[]>([]);
   const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
@@ -51,6 +49,28 @@ function ProductImageAndCategories() {
     subCategoryId: false,
   });
 
+  // Get preview URL for main image (handles both File and URL string)
+  const getMainImagePreview = () => {
+    if (!baseProduct.mainImage) return null;
+    
+    if (isFileImage(baseProduct.mainImage)) {
+      // It's a File object - create object URL
+      return URL.createObjectURL(baseProduct.mainImage as File);
+    }
+    
+    // It's a string URL from database
+    return baseProduct.mainImage as string;
+  };
+
+  // Get preview URL for thumbnail (handles both File and URL string)
+  const getThumbnailPreview = (image: File | string) => {
+    if (isFileImage(image)) {
+      return URL.createObjectURL(image as File);
+    }
+    return image as string;
+  };
+
+  // Fetch dropdown data on mount
   useEffect(() => {
     const fetchDropdownData = async () => {
       try {
@@ -62,11 +82,13 @@ function ProductImageAndCategories() {
         setBrands(brandsResponse);
       } catch (error) {
         console.error('Error fetching dropdown data:', error);
+        toast.error('Failed to load categories and brands');
       }
     };
     fetchDropdownData();
   }, []);
 
+  // Fetch subcategories when category changes
   useEffect(() => {
     const fetchSubCategories = async () => {
       if (!baseProduct.categoryId) {
@@ -78,31 +100,33 @@ function ProductImageAndCategories() {
         setSubCategories(response);
       } catch (error) {
         console.error('Error fetching subcategories:', error);
+        toast.error('Failed to load subcategories');
       }
     };
     fetchSubCategories();
   }, [baseProduct.categoryId]);
 
+  // Handle main image browse
   const handleBrowseMain = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setMainImagePreview(URL.createObjectURL(file));
       updateBaseProduct({ mainImage: file });
       setErrors((prev) => ({ ...prev, mainImage: false }));
     }
     e.target.value = '';
   };
 
+  // Handle main image replace
   const handleReplaceMain = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setMainImagePreview(URL.createObjectURL(file));
       updateBaseProduct({ mainImage: file });
       setErrors((prev) => ({ ...prev, mainImage: false }));
     }
     e.target.value = '';
   };
 
+  // Handle adding thumbnail images
   const handleAddImage = (e: React.ChangeEvent<HTMLInputElement>) => {
     const fileList = e.target.files;
     if (fileList && fileList.length) {
@@ -117,9 +141,7 @@ function ProductImageAndCategories() {
 
       const filesToAdd = newFiles.slice(0, availableSlots);
       const newThumbnails = [...baseProduct.thumbnails, ...filesToAdd];
-      const newPreviews = [...thumbnailPreviews, ...filesToAdd.map((file) => URL.createObjectURL(file))];
 
-      setThumbnailPreviews(newPreviews);
       updateBaseProduct({ thumbnails: newThumbnails });
       setErrors((prev) => ({ ...prev, thumbnails: false }));
 
@@ -130,11 +152,9 @@ function ProductImageAndCategories() {
     e.target.value = '';
   };
 
+  // Remove a thumbnail by index
   const removeThumbnail = (idx: number) => {
     const newThumbnails = baseProduct.thumbnails.filter((_, i) => i !== idx);
-    const newPreviews = thumbnailPreviews.filter((_, i) => i !== idx);
-
-    setThumbnailPreviews(newPreviews);
     updateBaseProduct({ thumbnails: newThumbnails });
   };
 
@@ -158,9 +178,9 @@ function ProductImageAndCategories() {
               style={{ minHeight: 200 }}
             >
               <div className="flex justify-center items-center h-[140px]">
-                {mainImagePreview ? (
+                {getMainImagePreview() ? (
                   <Image
-                    src={mainImagePreview}
+                    src={getMainImagePreview()!}
                     alt="Main Product"
                     width={500}
                     height={500}
@@ -174,34 +194,50 @@ function ProductImageAndCategories() {
                 )}
               </div>
               <div className="flex items-center gap-3 mt-3">
-                <label className="px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer flex items-center gap-2 text-sm">
-                  <ImageIcon size={14} />
-                  Browse
-                  <input type="file" accept="image/*" className="hidden" onChange={handleBrowseMain} />
-                </label>
-                <label className="px-3 py-1.5 bg-gray-200 hover:bg-gray-300 rounded-lg cursor-pointer flex items-center gap-2 text-sm">
-                  <RefreshCcw size={14} />
-                  Replace
-                  <input type="file" accept="image/*" className="hidden" onChange={handleReplaceMain} />
-                </label>
+                {!baseProduct.mainImage && (
+                  <label className="px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer flex items-center gap-2 text-sm">
+                    <ImageIcon size={14} />
+                    Browse
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      className="hidden" 
+                      onChange={handleBrowseMain} 
+                    />
+                  </label>
+                )}
+                {baseProduct.mainImage && (
+                  <label className="px-3 py-1.5 bg-gray-200 hover:bg-gray-300 rounded-lg cursor-pointer flex items-center gap-2 text-sm">
+                    <RefreshCcw size={14} />
+                    Replace
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      className="hidden" 
+                      onChange={handleReplaceMain} 
+                    />
+                  </label>
+                )}
               </div>
-              {errors.mainImage && <p className="text-xs text-red-500 mt-1">Main image is required</p>}
+              {errors.mainImage && (
+                <p className="text-xs text-red-500 mt-1">Main image is required</p>
+              )}
             </div>
           </div>
 
           {/* Thumbnails */}
           <div className="space-y-1">
             <Label className="text-sm font-semibold text-gray-700">
-              Thumbnails ({baseProduct.thumbnails.length}/{MAX_THUMBNAILS}) <span className="text-red-500">*</span>
+              Thumbnails ({baseProduct.thumbnails.length}/{MAX_THUMBNAILS})
             </Label>
-            <div className="flex items-center gap-3">
-              {thumbnailPreviews.map((preview, idx) => (
+            <div className="flex items-center gap-3 flex-wrap">
+              {baseProduct.thumbnails.map((thumbnail, idx) => (
                 <div
                   className="relative w-16 h-16 border rounded-md overflow-hidden bg-gray-50 flex items-center justify-center"
                   key={idx}
                 >
                   <Image
-                    src={preview}
+                    src={getThumbnailPreview(thumbnail)}
                     alt={`Product ${idx + 1}`}
                     width={64}
                     height={64}
@@ -221,11 +257,19 @@ function ProductImageAndCategories() {
                 <label className="w-16 h-16 border-2 border-dashed rounded-md flex flex-col items-center justify-center cursor-pointer bg-gray-50 hover:bg-gray-100 text-center">
                   <Plus size={18} className="text-green-600" />
                   <span className="text-xs text-gray-500">Add</span>
-                  <input type="file" accept="image/*" multiple className="hidden" onChange={handleAddImage} />
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    multiple 
+                    className="hidden" 
+                    onChange={handleAddImage} 
+                  />
                 </label>
               )}
             </div>
-            {errors.thumbnails && <p className="text-xs text-red-500">At least one thumbnail is required</p>}
+            {errors.thumbnails && (
+              <p className="text-xs text-red-500">At least one thumbnail is required</p>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -286,7 +330,9 @@ function ProductImageAndCategories() {
                   ))}
                 </SelectContent>
               </Select>
-              {errors.categoryId && <p className="text-xs text-red-500">Category is required</p>}
+              {errors.categoryId && (
+                <p className="text-xs text-red-500">Category is required</p>
+              )}
             </div>
 
             <div className="space-y-1">
@@ -312,7 +358,9 @@ function ProductImageAndCategories() {
                   ))}
                 </SelectContent>
               </Select>
-              {errors.subCategoryId && <p className="text-xs text-red-500">Sub category is required</p>}
+              {errors.subCategoryId && (
+                <p className="text-xs text-red-500">Sub category is required</p>
+              )}
             </div>
           </div>
         </CardContent>
@@ -320,5 +368,3 @@ function ProductImageAndCategories() {
     </Card>
   );
 }
-
-export default ProductImageAndCategories;

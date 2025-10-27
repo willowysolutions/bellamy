@@ -43,14 +43,14 @@ export default function CheckoutModal({
   const [isOrderSummaryOpen, setIsOrderSummaryOpen] = useState(false);
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, ""); // Remove non-digits
+    const value = e.target.value.replace(/\D/g, ""); 
     if (value.length <= 10) {
       setPhoneNumber(value);
     }
   };
 
   const handlePincodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, ""); // Remove non-digits
+    const value = e.target.value.replace(/\D/g, ""); 
     if (value.length <= 6) {
       setPincode(value);
     }

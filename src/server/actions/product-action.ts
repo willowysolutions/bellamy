@@ -238,7 +238,6 @@ export async function getProductById(id: string) {
       where: {
         id,
       },
-      // Use the 'include' option to fetch the related models
       include: {
         brand: {
           select: {

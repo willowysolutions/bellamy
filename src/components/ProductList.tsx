@@ -7,7 +7,7 @@ type Product = {
   id: string;
   name: string;
   price: string;
-  oldPrice?: string;
+  offerPrice?: string;
   image: string;
   rating?: number;
   reviews?: number;
@@ -20,7 +20,7 @@ type ProductResponse = {
   id: string;
   name: string;
   price: number;
-  oldPrice?: number;
+  offerPrice?: number;
   image?: string;
   rating?: number;
   reviews?: number;
@@ -47,7 +47,7 @@ export default function ProductList() {
           id: product.id,
           name: product.name,
           price: `${product.price}`,
-          oldPrice: product.oldPrice ? `${product.oldPrice}` : undefined,
+          offerPrice: product.offerPrice ? `${product.offerPrice}` : undefined,
           image: product.image || "/Images/placeholder.jpg",
           description: product.description,
           rating: product.rating ?? 0,
@@ -126,7 +126,7 @@ export default function ProductList() {
                   id={product.id}
                   name={product.name}
                   price={product.price}
-                  oldPrice={product.oldPrice}
+                  offerPrice={product.offerPrice}
                   image={product.image}
                   description={product.description}
                   variantId={product.variantId}

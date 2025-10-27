@@ -104,6 +104,7 @@ export type VariantDetail = {
   productId: string;
   sku: string;
   price: number;
+  offerPrice?: number | null;
   qty: number;
   images: string[];
   createdAt: Date;
@@ -119,3 +120,4 @@ export type AttributeWithValues = {
     value: string;
   }[];
 };
+

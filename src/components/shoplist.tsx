@@ -25,6 +25,7 @@ type Product = {
   qty: number;
   image: string;
   subimage: string[];
+  offerPrice?: string;
   brandId?: string;
   categoryId?: string;
   isInCart?: boolean;
@@ -614,6 +615,7 @@ export default function ShopList() {
                     <div key={p.id} className="group">
                       <ProductCard
                         id={p.id}
+                        offerPrice={p.offerPrice}
                         name={p.name}
                         isInCart={p.isInCart}
                         isInWishlist={p.isInWishlist}

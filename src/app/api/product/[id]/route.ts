@@ -38,6 +38,7 @@ export async function GET(
     const variants = (product.variants || []).map((v) => ({
       id: v.id,
       price: v.price,
+      offerPrice: v.offerPrice,
       qty: v.qty,
       images: v.images,
       options: v.options.map((o) => ({
@@ -48,7 +49,6 @@ export async function GET(
       })),
     }));
 
-    // Build attribute catalog (possible values per attribute across variants)
     const attributeMap = new Map<string, { attributeId: string; name: string; values: { valueId: string; value: string }[] }>();
     for (const v of variants) {
       for (const o of v.options) {
@@ -71,6 +71,7 @@ export async function GET(
       category: product.category || undefined,
       subCategory: product.subCategory || undefined,
       price: defaultVariant?.price ?? 0,
+      offerPrice: defaultVariant?.offerPrice ?? undefined,
       subimage: defaultVariant?.images ?? [],
       variants,
       attributesCatalog: Array.from(attributeMap.values()),

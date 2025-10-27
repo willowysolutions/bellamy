@@ -4,17 +4,17 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useConfigurableProduct } from "@/context/ConfigurableProductContext";
-import { cn } from "@/lib/utils"; // optional, only if you use cn() helper
+import { useEditProduct } from "@/context/EcitProductContext";
+import { cn } from "@/lib/utils";
 
-export default function ProductFormSection() {
-  const { baseProduct, setBaseProduct } = useConfigurableProduct();
+export default function EditProductFormSection() {
+  const { baseProduct, updateBaseProduct } = useEditProduct();
 
   // Handle numeric inputs safely
   const handleNumericChange = (key: keyof typeof baseProduct, value: string) => {
     const numValue = value === "" ? 0 : parseFloat(value);
     if (!isNaN(numValue)) {
-      setBaseProduct({ ...baseProduct, [key]: numValue });
+      updateBaseProduct({ [key]: numValue });
     }
   };
 
@@ -49,7 +49,7 @@ export default function ProductFormSection() {
               id="productName"
               value={baseProduct.name}
               onChange={(e) =>
-                setBaseProduct({ ...baseProduct, name: e.target.value })
+                updateBaseProduct({ name: e.target.value })
               }
               placeholder="Enter product name"
             />
@@ -64,7 +64,7 @@ export default function ProductFormSection() {
               id="description"
               value={baseProduct.description}
               onChange={(e) =>
-                setBaseProduct({ ...baseProduct, description: e.target.value })
+                updateBaseProduct({ description: e.target.value })
               }
               className="min-h-[140px]"
               placeholder="Enter product description"

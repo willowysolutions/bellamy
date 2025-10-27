@@ -86,7 +86,7 @@ export async function GET(request: Request) {
         variants: {
           // IMPORTANT: Include SKU to help identify the default variant later, 
           // and images, for a more complete product card view.
-          select: { id: true, price: true, sku: true, images: true }, 
+          select: { id: true, price: true, offerPrice: true, sku: true, images: true }, 
           orderBy: { createdAt: "asc" },
         },
       },
@@ -146,21 +146,16 @@ export async function GET(request: Request) {
         category: p.category || undefined,
         subCategory: p.subCategory || undefined,
         
-        // Product Variant Info (based on default variant)
         price: defaultVariant?.price ?? 0,
-        subimage: defaultVariant?.images ?? [], // Use default variant's images as subimages
+        offerPrice: defaultVariant?.offerPrice ?? undefined,
+        subimage: defaultVariant?.images ?? [],
         defaultVariantId: defaultVariant?.id ?? null,
         
-        // New status fields
-        isInCart: isInCart, // True if ANY of its variants are in the cart
-        isInWishlist: isInWishlist, // True if ANY of its variants are in the wishlist
-
-        // Removed qty, as it's variant-specific and not meaningful on the product level here
-        // qty: undefined, 
+        isInCart: isInCart, 
+        isInWishlist: isInWishlist,
       };
     });
 
-    // 5. Apply price range filter AFTER mapping (Existing Logic)
     if (priceRange) {
       let minPrice = 0;
       let maxPrice = Number.MAX_SAFE_INTEGER;

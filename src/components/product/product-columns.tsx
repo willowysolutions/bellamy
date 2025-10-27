@@ -22,7 +22,6 @@ import {
   Edit2,
   Eye,
   MoreHorizontal,
-  Plus,
   Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -146,9 +145,6 @@ export const ProductDropdownMenu = ({ product }: { product: ProductDetail }) => 
   const handleDeleteClick = () => {
     setOpenDelete(true);
   };
-  const handleAddVariantClick = () => {
-    setOpenAddVariant(true);
-  };
 
   const handleViewClick = () => {
     
@@ -175,11 +171,6 @@ export const ProductDropdownMenu = ({ product }: { product: ProductDetail }) => 
             <Edit2 className="size-4 mr-2" />
             Edit Product
           </DropdownMenuItem>
-          <DropdownMenuItem onSelect={handleAddVariantClick}>
-            <Plus className="size-4 mr-2" />
-            Add Variant
-          </DropdownMenuItem>
-
           <DropdownMenuItem
             className="text-destructive"
             onSelect={handleDeleteClick}

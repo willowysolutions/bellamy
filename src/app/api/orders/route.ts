@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth"; // better-auth
+import { auth } from "@/lib/auth";
 
 // Place a new order
 export async function POST(req: NextRequest) {
   try {
-    // ✅ Get current session/user
     const session = await auth.api.getSession({ headers: req.headers });
     if (!session) {
       return NextResponse.json({ error: "Not logged in" }, { status: 401 });
@@ -13,7 +12,6 @@ export async function POST(req: NextRequest) {
 
     const user = session.user;
 
-    // ✅ Expect address + paymentMethod from client, optionally direct items for Buy Now
     const { paymentMethod, phoneNumber, street, city, state, pincode, items } = await req.json();
 
     if (!paymentMethod || !phoneNumber || !street || !city || !state || !pincode) {
@@ -23,40 +21,38 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // ✅ Define type for items
     type OrderItemInput = {
       variantId: string;
       quantity: number;
     };
 
-    // ✅ Determine source: direct items (Buy Now) vs cart
     const orderItems: { variantId: string; quantity: number; price: number }[] = [];
     let totalAmount = 0;
-    let isDirectBuyNow = true; // Track if this is a direct buy
+    let isDirectBuyNow = true; 
 
     if (Array.isArray(items) && items.length > 1) {
-      // Direct Buy Now using provided items (with variantId)
       isDirectBuyNow = false;
       const variantIds = (items as OrderItemInput[]).map((i) => i.variantId);
       const variants = await prisma.productVariant.findMany({
         where: { id: { in: variantIds } },
-        select: { id: true, price: true, qty: true },
+        select: { id: true, price: true, offerPrice: true, qty: true },
       });
 
       for (const it of items as OrderItemInput[]) {
         const v = variants.find((vv) => vv.id === it.variantId);
+        const priceToUse = v?.offerPrice ?? v?.price ?? 0;
         if (!v) return NextResponse.json({ error: `Variant not found: ${it.variantId}` }, { status: 400 });
         if (it.quantity < 1) return NextResponse.json({ error: `Invalid quantity for ${it.variantId}` }, { status: 400 });
         if (it.quantity > v.qty) return NextResponse.json({ error: `Insufficient stock for ${it.variantId}` }, { status: 400 });
-        orderItems.push({ variantId: v.id, quantity: it.quantity, price: v.price });
-        totalAmount += v.price * it.quantity;
+        orderItems.push({ variantId: v.id, quantity: it.quantity, price: priceToUse });
+        totalAmount += priceToUse * it.quantity;
       }
     } else {
       // Fallback to cart
       const cart = await prisma.cart.findUnique({
         where: { userId: user.id },
         include: {
-          items: { include: { variant: { select: { id: true, price: true, qty: true } } } },
+          items: { include: { variant: { select: { id: true, price: true, offerPrice: true, qty: true } } } },
         },
       });
 
@@ -69,12 +65,11 @@ export async function POST(req: NextRequest) {
         if (ci.quantity > ci.variant.qty) {
           return NextResponse.json({ error: `Insufficient stock for ${ci.variant.id}` }, { status: 400 });
         }
-        orderItems.push({ variantId: ci.variantId, quantity: ci.quantity, price: ci.variant.price });
-        totalAmount += ci.variant.price * ci.quantity;
+        orderItems.push({ variantId: ci.variantId, quantity: ci.quantity, price: ci.variant.offerPrice ?? ci.variant.price });
+        totalAmount += (ci.variant.offerPrice ?? ci.variant.price) * ci.quantity;
       }
     }
 
-    // ✅ Create order with address snapshot
     const order = await prisma.order.create({
       data: {
         userId: user.id,

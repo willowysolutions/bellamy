@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useTransition} from "react";
+import React, { useState, useTransition } from "react";
 import { toast } from "sonner";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -16,7 +16,7 @@ type ProductProps = {
   id: string;
   name: string;
   price: string;
-  oldPrice?: string;
+  offerPrice?: string;
   image: string;
   badge?: string;
   description?: string;
@@ -31,7 +31,7 @@ export default function ProductCard({
   id,
   name,
   price,
-  oldPrice,
+  offerPrice,
   image,
   badge,
   isInCart,
@@ -50,11 +50,12 @@ export default function ProductCard({
   const { updateCartCount } = useCart();
   const { updateWishlistCount } = useWishlist();
 
-  const discountPercentage = oldPrice
+  const discountPercentage = offerPrice
     ? Math.round(
-      ((parseFloat(oldPrice) - parseFloat(price)) / parseFloat(oldPrice)) *
-      100
-    )
+        ((parseFloat(offerPrice) - parseFloat(price)) /
+          parseFloat(offerPrice)) *
+          100
+      )
     : 0;
 
   // Add to cart handler
@@ -127,7 +128,7 @@ export default function ProductCard({
             setIsInWishlistState(false);
             router.push("/wishlist");
           } else {
-            router.push('/login')
+            router.push("/login");
           }
         } else {
           // Add to wishlist
@@ -138,7 +139,7 @@ export default function ProductCard({
             toast.success(`Added "${name}" to wishlist!`);
           } else {
             setIsInWishlistState(false);
-            router.push('/login')
+            router.push("/login");
           }
         }
       } catch (error) {
@@ -174,7 +175,6 @@ export default function ProductCard({
               )}
             </div>
           )}
-
           {/* Image */}
           <div className="relative w-full h-[500px] overflow-hidden rounded-br-lg rounded-tl-lg bg-gradient-to-br from-gray-50 to-gray-100">
             <Image
@@ -219,7 +219,11 @@ text-stone-500 cursor-pointer transition-all shadow-lg backdrop-blur-sm overflow
 bg-white hover:bg-gray-50 text-gray-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg backdrop-blur-sm overflow-hidden"
                 >
                   {isCartLoading ? (
-                    <Loader2 size={20} strokeWidth={1.5} className="flex-shrink-0 animate-spin" />
+                    <Loader2
+                      size={20}
+                      strokeWidth={1.5}
+                      className="flex-shrink-0 animate-spin"
+                    />
                   ) : (
                     <ShoppingCart
                       size={20}
@@ -238,28 +242,38 @@ bg-white hover:bg-gray-50 text-gray-800 transition-all disabled:opacity-50 disab
               <button
                 onClick={handleToggleWishlist}
                 disabled={isPending || isWishlistLoading}
-                aria-label={isInWishlistState ? "Go to wishlist" : "Add to wishlist"}
+                aria-label={
+                  isInWishlistState ? "Go to wishlist" : "Add to wishlist"
+                }
                 title={isInWishlistState ? "Go to wishlist" : "Add to wishlist"}
                 className={`group/btn flex items-center justify-center gap-2 h-12 cursor-pointer px-4 rounded-full 
 bg-white hover:bg-gray-50 text-gray-800 transition-all shadow-lg backdrop-blur-sm 
 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden`}
               >
                 {isWishlistLoading ? (
-                  <Loader2 size={20} strokeWidth={1.5} className="flex-shrink-0 animate-spin" />
+                  <Loader2
+                    size={20}
+                    strokeWidth={1.5}
+                    className="flex-shrink-0 animate-spin"
+                  />
                 ) : (
                   <Heart
                     size={20}
                     strokeWidth={1.5}
                     fill={isInWishlistState ? "currentColor" : "none"}
-                    className={`flex-shrink-0 transition-colors duration-300 ${isInWishlistState ? "text-amber-600" : "text-gray-800"
-                      }`}
+                    className={`flex-shrink-0 transition-colors duration-300 ${
+                      isInWishlistState ? "text-amber-600" : "text-gray-800"
+                    }`}
                   />
                 )}
                 <span className="max-w-0 group-hover/btn:max-w-xs overflow-hidden whitespace-nowrap transition-all duration-500 text-sm font-medium">
-                  {isWishlistLoading ? "Loading..." : isInWishlist ? "Go to wishlist" : "Wishlist"}
+                  {isWishlistLoading
+                    ? "Loading..."
+                    : isInWishlist
+                    ? "Go to wishlist"
+                    : "Wishlist"}
                 </span>
               </button>
-
 
               {/* View Details Button */}
               <button
@@ -275,25 +289,37 @@ disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden`}
               </button>
             </div>
           </div>
-
           {/* Product Info */}
           <div className="p-3 flex flex-col gap-2">
             <h3 className="font-medium text-sm text-stone-500 line-clamp-2 min-h-[36px] leading-tight">
               {name}
             </h3>
             <div className="flex items-baseline gap-2">
-              <div
-                className="font-bold text-base"
-                style={{ color: brandThemePrimary }}
-              >
-                {rupee}
-                {price}
-              </div>
-              {oldPrice && (
-                <span className="text-xs text-gray-400 line-through">
+              {offerPrice ? (
+                <>
+                  {/* Show discounted offer price */}
+                  <div
+                    className="font-bold text-base"
+                    style={{ color: brandThemePrimary }}
+                  >
+                    {rupee}
+                    {offerPrice}
+                  </div>
+                  {/* Strike-through original price */}
+                  <span className="text-xs text-gray-400 line-through">
+                    {rupee}
+                    {price}
+                  </span>
+                </>
+              ) : (
+                /* Show only normal price */
+                <div
+                  className="font-bold text-base"
+                  style={{ color: brandThemePrimary }}
+                >
                   {rupee}
-                  {oldPrice}
-                </span>
+                  {price}
+                </div>
               )}
             </div>
           </div>
