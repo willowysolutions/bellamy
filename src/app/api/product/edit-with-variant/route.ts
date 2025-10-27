@@ -1,13 +1,9 @@
-// ============================================
-// API ROUTE: app/api/product/withvariant/route.ts
-// Handles both POST (create) and PUT (update)
-// ============================================
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import uploadPhoto from "@/lib/upload";
 import { Prisma } from "@prisma/client";
 
-// Simple function to generate a unique SKU
+
 function generateSKU(): string {
   const timestamp = Date.now().toString(36);
   const random = Math.random().toString(36).substring(2, 8);
@@ -49,9 +45,6 @@ interface CreateProcessedVariant extends ProcessedVariant {
   finalOfferPrice?: number;
 }
 
-// ============================================
-// PUT - UPDATE EXISTING PRODUCT
-// ============================================
 export async function PUT(request: NextRequest) {
   try {
     const formData = await request.formData();
