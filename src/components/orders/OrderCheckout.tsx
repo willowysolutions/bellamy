@@ -33,7 +33,7 @@ export default function CheckoutModal({
 }: CheckoutModalProps) {
   const router = useRouter();
   const [paymentMethod, setPaymentMethod] = useState("COD");
-  const {updateCartCount} = useCart();
+  const { updateCartCount } = useCart();
   const [phoneNumber, setPhoneNumber] = useState("");
   const [street, setStreet] = useState("");
   const [city, setCity] = useState("");
@@ -43,14 +43,14 @@ export default function CheckoutModal({
   const [isOrderSummaryOpen, setIsOrderSummaryOpen] = useState(false);
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, ""); 
+    const value = e.target.value.replace(/\D/g, "");
     if (value.length <= 10) {
       setPhoneNumber(value);
     }
   };
 
   const handlePincodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, ""); 
+    const value = e.target.value.replace(/\D/g, "");
     if (value.length <= 6) {
       setPincode(value);
     }
@@ -61,17 +61,20 @@ export default function CheckoutModal({
       toast.error("Please fill in all required fields");
       return;
     }
-
     if (phoneNumber.length !== 10) {
       toast.error("Phone number must be 10 digits");
       return;
     }
-
     if (pincode.length !== 6) {
       toast.error("Pincode must be 6 digits");
       return;
     }
 
+    if (paymentMethod === "COD") return handleCODorder();
+    if (paymentMethod === "ONLINE") return handleOnlinePayment();
+  };
+
+  const handleCODorder = async () => {
     setLoading(true);
     try {
       const res = await fetch("/api/orders", {
@@ -105,6 +108,88 @@ export default function CheckoutModal({
       router.refresh();
     } catch {
       toast.error("Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOnlinePayment = async () => {
+    setLoading(true);
+
+    try {
+      const rpRes = await fetch("/api/payment/create-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ totalAmount: total }),
+      });
+
+      const rpData = await rpRes.json();
+
+      if (!rpData.success) {
+        toast.error("Failed to start online payment");
+        return;
+      }
+
+      if (!window.Razorpay) {
+        toast.error("Razorpay SDK not loaded");
+        return;
+      }
+
+      const options: RazorpayOptions = {
+        key: rpData.key,
+        amount: total * 100,
+        currency: "INR",
+        name: "Your Store",
+        description: "Order payment",
+        order_id: rpData.orderId,
+
+        handler: async function (response: RazorpayResponse) {
+          const verifyRes = await fetch("/api/payment/verify", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              paymentId: response.razorpay_payment_id,
+              orderId: response.razorpay_order_id,
+              signature: response.razorpay_signature,
+              items: products.map((p) => ({
+                variantId: p.id,
+                quantity: p.quantity,
+              })),
+              phoneNumber,
+              street,
+              city,
+              state,
+              pincode,
+            }),
+          });
+
+          const verifyData = await verifyRes.json();
+
+          if (!verifyData.success) {
+            toast.error("Payment verification failed");
+            return;
+          }
+
+          await updateCartCount();
+          toast.success("Payment successful & order placed!");
+          onClose();
+          router.push("/user-profile");
+          router.refresh();
+        },
+
+        prefill: {
+          contact: phoneNumber,
+        },
+        theme: {
+          color: "#000000",
+        },
+      };
+
+      const rzp: RazorpayInstance = new window.Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      console.error("Online payment error:", err);
+      toast.error("Payment failed");
     } finally {
       setLoading(false);
     }
