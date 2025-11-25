@@ -6,6 +6,7 @@ import { APP_CONFIG } from "@/config/app";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import ProvidersLayout from "./providerLayout";
+import Script from "next/script";
 
 const fontSans = DM_Sans({
   variable: "--font-sans",
@@ -24,6 +25,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <Script
+          src="https://checkout.razorpay.com/v1/checkout.js"
+          strategy="afterInteractive"
+        />
+      </head>
       <body className={`${fontSans.variable} font-sans antialiased`}>
         <ThemeProvider
           attribute="class"

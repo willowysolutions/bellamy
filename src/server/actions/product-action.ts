@@ -27,13 +27,11 @@ export const createProductAction = actionClient
     try {
             await getAuthenticatedAdmin()
       
-      // handle main image upload
       let photoUrl: string = "";
       if (parsedInput.image && parsedInput.image.size > 0) {
         photoUrl = await uploadPhoto(parsedInput.image);
       }
       if (!photoUrl) throw new Error("Image is required");
-      console.log("=== END DEBUG ===");
 
       const product = await prisma.product.create({
         data: {
@@ -240,7 +238,6 @@ export async function getProductById(id: string) {
       where: {
         id,
       },
-      // Use the 'include' option to fetch the related models
       include: {
         brand: {
           select: {

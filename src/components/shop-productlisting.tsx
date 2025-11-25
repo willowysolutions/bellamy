@@ -20,6 +20,7 @@ type Product = {
   qty: number;
   image: string;
   subimage: string[];
+  offerPrice?: string;
   brandId?: string;
   categoryId?: string;
   isInCart?: boolean;
@@ -173,7 +174,6 @@ export default function ShopProductListing({
             throw new Error(`Failed to fetch products: ${prodSettled.value.status}`);
           const prodData = await prodSettled.value.json();
           if (mounted) setProducts(prodData);
-
           if (
             brandSettled.status !== "fulfilled" ||
             (brandSettled.value && !brandSettled.value.ok)
@@ -559,6 +559,7 @@ export default function ShopProductListing({
                         price={`${p.price.toFixed(2)}`}
                         image={p.image}
                         description={p.description}
+                        offerPrice={p.offerPrice ? p.offerPrice : undefined}
                         variantId={p.defaultVariantId as string}
                         brandName={p.brand?.name}
                         isInCart={p.isInCart}

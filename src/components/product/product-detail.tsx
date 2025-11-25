@@ -4,7 +4,6 @@ import React, { useEffect, useState, ChangeEvent } from 'react';
 import Image from 'next/image';
 import { getProductById } from '@/server/actions/product-action'; 
 import { ProductDeleteDialog } from './delete-product-dialog'; 
-import { ProductFormDialog } from './product-dialog-form'; 
 import { Button } from '@/components/ui/button';
 import { 
   Card, 
@@ -26,6 +25,7 @@ import { useAction } from 'next-safe-action/hooks';
 import { toast } from 'sonner';
 import { ProductDetail, VariantDetail, AttributeWithValues } from '@/types/product';
 import { rupee } from '@/constants/values';
+import { useRouter } from 'next/navigation';
 
 interface ProductDetailProps {
    id: string;
@@ -35,33 +35,39 @@ export default function ProductDetailPage({ id }: ProductDetailProps) {
   const [product, setProduct] = useState<ProductDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string>('');
+  const router = useRouter();
+
+  const fetchProduct = async () => {
+    try {
+      const fetchedProduct = await getProductById(id);
+      if (!fetchedProduct.success) {
+        toast.error(fetchedProduct.message || 'Product not found');
+        return;
+      }
+      if (!fetchedProduct.data) {
+        toast.error('Product not found');
+        return;
+      }
+      setProduct(fetchedProduct.data);
+      setSelectedImage(fetchedProduct.data.image);
+    } catch (error) {
+      console.error('Failed to fetch product:', error);
+      toast.error('Failed to load product');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        const fetchedProduct = await getProductById(id);
-        if (!fetchedProduct.success) {
-          toast.error(fetchedProduct.message || 'Product not found');
-          return;
-        }
-        if (!fetchedProduct.data) {
-          toast.error('Product not found');
-          return;
-        }
-        setProduct(fetchedProduct.data);
-        setSelectedImage(fetchedProduct.data.image);
-      } catch (error) {
-        console.error('Failed to fetch product:', error);
-        toast.error('Failed to load product');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchProduct();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
+  const refreshProduct = async () => {
+    await fetchProduct();
+    router.refresh();
+  };
 
   const getStockStatus = (qty: number) => {
     if (qty === 0) return { text: 'Out of Stock', color: 'text-red-600 bg-red-50 border-red-200' };
@@ -97,7 +103,7 @@ export default function ProductDetailPage({ id }: ProductDetailProps) {
           <p className="text-muted-foreground mt-1">Product ID: {product.id}</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setIsUpdateDialogOpen(true)}>
+          <Button variant="outline" onClick={() => router.push(`/admin/products/edit-product/${product.id}`)}>
             <Pencil className="mr-2 h-4 w-4" /> Edit
           </Button>
           <Button variant="destructive" onClick={() => setIsDeleteDialogOpen(true)}>
@@ -244,7 +250,7 @@ export default function ProductDetailPage({ id }: ProductDetailProps) {
             <CardContent>
               <div className="space-y-3">
                 {(product.variants || []).map((v: VariantDetail) => (
-                  <VariantRow key={v.id} variant={v} />
+                  <VariantRow key={v.id} variant={v} onUpdate={refreshProduct} />
                 ))}
                 {(!product.variants || product.variants.length === 0) && (
                   <div className="text-sm text-muted-foreground">No variants yet.</div>
@@ -254,14 +260,6 @@ export default function ProductDetailPage({ id }: ProductDetailProps) {
           </Card>
         </div>
       </div>
-      
-      
-      {/* Modals for Update and Delete */}
-      <ProductFormDialog
-        product={product}
-        open={isUpdateDialogOpen}
-        openChange={setIsUpdateDialogOpen}
-      />
       <ProductDeleteDialog
         product={product}
         open={isDeleteDialogOpen}
@@ -273,16 +271,33 @@ export default function ProductDetailPage({ id }: ProductDetailProps) {
 
 interface VariantRowProps {
   variant: VariantDetail;
+  onUpdate: () => Promise<void>;
 }
 
-function VariantRow({ variant }: VariantRowProps) {
+function VariantRow({ variant, onUpdate }: VariantRowProps) {
   const [price, setPrice] = useState(String(variant.price));
   const [qty, setQty] = useState(String(variant.qty));
   const [editingOptions, setEditingOptions] = useState(false);
   const [attributes, setAttributes] = useState<AttributeWithValues[]>([]);
   const [selectedOptions, setSelectedOptions] = useState<{ attributeId: string; valueId: string }[]>([]);
-  const { execute: update, isExecuting: updating } = useAction(updateVariantAction);
-  const { execute: del, isExecuting: deleting } = useAction(deleteVariantAction);
+  const { execute: update, isExecuting: updating } = useAction(updateVariantAction, {
+    onSuccess: async () => {
+      toast.success('Variant updated successfully');
+      await onUpdate();
+    },
+    onError: () => {
+      toast.error('Failed to update variant');
+    }
+  });
+  const { execute: del, isExecuting: deleting } = useAction(deleteVariantAction, {
+    onSuccess: async () => {
+      toast.success('Variant deleted successfully');
+      await onUpdate();
+    },
+    onError: () => {
+      toast.error('Failed to delete variant');
+    }
+  });
 
   useEffect(() => {
     const current = (variant.options || []).map((o) => ({ 

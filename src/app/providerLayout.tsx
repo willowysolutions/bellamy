@@ -4,6 +4,7 @@
 import { usePathname } from "next/navigation";
 import Header from "@/components/Header";
 import { CartWishlistProvider } from "@/context/cartContext";
+import { ConfigurableProductProvider } from "@/context/ConfigurableProductContext";
 
 export default function ProvidersLayout({
   children,
@@ -18,8 +19,10 @@ export default function ProvidersLayout({
 
   return (
     <CartWishlistProvider>
+      <ConfigurableProductProvider>
       {!hideHeader && <Header />}
-      {children}
+        {children}
+      </ConfigurableProductProvider>
     </CartWishlistProvider>
   );
 }

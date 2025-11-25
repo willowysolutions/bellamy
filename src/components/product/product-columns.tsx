@@ -1,9 +1,13 @@
 "use client";
 
 import { ProductDetail } from "@/types/product";
-import { ProductFormDialog } from "./product-dialog-form";
 import { ProductDeleteDialog } from "./delete-product-dialog";
 
+import { useAction } from "next-safe-action/hooks";
+import { createVariantAction } from "@/server/actions/variant-actions";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { ColumnDef } from "@tanstack/react-table";
 import {
   DropdownMenu,
@@ -18,7 +22,6 @@ import {
   Edit2,
   Eye,
   MoreHorizontal,
-  Plus,
   Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -26,6 +29,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatCurrency } from "@/lib/utils";
+import { Label } from "../ui/label";
 
 export const productColumns: ColumnDef<ProductDetail>[] = [
   {
@@ -131,19 +135,15 @@ export const productColumns: ColumnDef<ProductDetail>[] = [
 
 export const ProductDropdownMenu = ({ product }: { product: ProductDetail }) => {
   const [openDelete, setOpenDelete] = useState(false);
-  const [openEdit, setOpenEdit] = useState(false);
   const [openAddVariant, setOpenAddVariant] = useState(false);
   const router = useRouter();
 
   const handleEditClick = () => {
-    setOpenEdit(true);
+    router.push(`/admin/products/edit-product/${product.id}`);
   };
 
   const handleDeleteClick = () => {
     setOpenDelete(true);
-  };
-  const handleAddVariantClick = () => {
-    setOpenAddVariant(true);
   };
 
   const handleViewClick = () => {
@@ -171,11 +171,6 @@ export const ProductDropdownMenu = ({ product }: { product: ProductDetail }) => 
             <Edit2 className="size-4 mr-2" />
             Edit Product
           </DropdownMenuItem>
-          <DropdownMenuItem onSelect={handleAddVariantClick}>
-            <Plus className="size-4 mr-2" />
-            Add Variant
-          </DropdownMenuItem>
-
           <DropdownMenuItem
             className="text-destructive"
             onSelect={handleDeleteClick}
@@ -186,12 +181,7 @@ export const ProductDropdownMenu = ({ product }: { product: ProductDetail }) => 
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* Edit Dialog */}
-      <ProductFormDialog
-        product={product}
-        open={openEdit}
-        openChange={setOpenEdit}
-      />
+      
 
       {/* Delete Dialog */}
       <ProductDeleteDialog
@@ -204,10 +194,6 @@ export const ProductDropdownMenu = ({ product }: { product: ProductDetail }) => 
   );
 };
 
-import { useAction } from "next-safe-action/hooks";
-import { createVariantAction } from "@/server/actions/variant-actions";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 
 function InlineAddVariant({ productId, onClose }: { productId: string; onClose: () => void }) {
   const [price, setPrice] = useState("");
@@ -215,15 +201,21 @@ function InlineAddVariant({ productId, onClose }: { productId: string; onClose: 
   const [files, setFiles] = useState<File[]>([]);
   const [attributes, setAttributes] = useState<{ id: string; name: string; values: { id: string; value: string }[] }[]>([]);
   const [selectedOptions, setSelectedOptions] = useState<{ attributeId: string; valueId: string }[]>([]);
+  const [loadingAttributes, setLoadingAttributes] = useState(true);
   const { execute, isExecuting } = useAction(createVariantAction, {
     onSuccess: () => { onClose(); },
   });
 
   useEffect(() => {
     (async () => {
-      const res = await fetch('/api/attributes');
-      const data = await res.json();
-      setAttributes(data || []);
+      setLoadingAttributes(true);
+      try {
+        const res = await fetch('/api/attributes');
+        const data = await res.json();
+        setAttributes(data || []);
+      } finally {
+        setLoadingAttributes(false);
+      }
     })();
   }, []);
 
@@ -246,40 +238,58 @@ function InlineAddVariant({ productId, onClose }: { productId: string; onClose: 
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-md p-4 w-full max-w-md space-y-3">
-        <div className="font-semibold">Add Variant</div>
-        <div className="space-y-3">
-          {attributes.map(attr => (
-            <div key={attr.id} className="space-y-1.5">
-              <label className="text-sm font-medium">{attr.name}</label>
-              <Select
-                value={selectedOptions.find(o => o.attributeId === attr.id)?.valueId || ''}
-                onValueChange={(value) => setOption(attr.id, value)}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select" />
-                </SelectTrigger>
-                <SelectContent>
-                  {attr.values.map(v => (
-                    <SelectItem key={v.id} value={v.id}>
-                      {v.value}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          ))}
-        </div>
-        <Input type="number" placeholder="Price" value={price} onChange={(e) => setPrice(e.target.value)} />
-        <Input type="number" placeholder="Qty" value={qty} onChange={(e) => setQty(e.target.value)} />
-        <Input type="file" multiple accept="image/*" onChange={(e) => setFiles(Array.from(e.target.files || []))} />
-        <div className="flex justify-end gap-2">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle>Add Variant</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {loadingAttributes ? (
+            <div className="text-center py-6">Loading attributes...</div>
+          ) : (
+            attributes.map(attr => (
+              <div key={attr.id} className="space-y-2">
+                <Label>{attr.name}</Label>
+                <Select
+                  value={selectedOptions.find(o => o.attributeId === attr.id)?.valueId || ''}
+                  onValueChange={(value) => setOption(attr.id, value)}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select" />
+                  </SelectTrigger>
+                  <SelectContent className="w-full">
+                    {attr.values.map(v => (
+                      <SelectItem key={v.id} value={v.id}>
+                        {v.value}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            ))
+          )}
+
+          <div className="space-y-2">
+            <Label>Price</Label>
+            <Input type="number" placeholder="Price" value={price} onChange={(e) => setPrice(e.target.value)} />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Quantity</Label>
+            <Input type="number" placeholder="Qty" value={qty} onChange={(e) => setQty(e.target.value)} />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Images</Label>
+            <Input type="file" multiple accept="image/*" onChange={(e) => setFiles(Array.from(e.target.files || []))} />
+          </div>
+        </CardContent>
+        <CardFooter className="flex justify-end gap-2">
           <Button variant="outline" onClick={onClose}>Cancel</Button>
           <Button onClick={submit} disabled={isExecuting || !price || !qty || files.length === 0}>
             {isExecuting ? "Saving..." : "Save Variant"}
           </Button>
-        </div>
-      </div>
+        </CardFooter>
+      </Card>
     </div>
   );
 }

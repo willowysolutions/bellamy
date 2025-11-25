@@ -3,6 +3,12 @@
 import { prisma } from "@/lib/prisma";
 import { getAuthenticatedAdmin } from "./admin-user-action";
 
+type ActionResult<T = unknown> = {
+  success: boolean;
+  data?: T;
+  error?: string;
+};
+
 export async function getAttributesWithValues() {
   const attrs = await prisma.attribute.findMany({
     include: {
@@ -17,52 +23,158 @@ export async function getAttributesWithValues() {
   }));
 }
 
+
+export async function getAttributesList() {
+ try {
+    const attrs = await prisma.attribute.findMany({
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+    });
+    return {
+      success: true,
+      data: attrs,
+    };
+  } catch (e) {
+    console.log("Error fetching attributes list:", e);
+    return {
+      success: false,
+      error: e instanceof Error ? e.message : "Failed to fetch attributes list"
+    };
+  }
+}
+
+export async function getAttributeValues(attributeId: string) {
+  try {
+    const values = await prisma.attributeValue.findMany({
+      where: { attributeId },
+      select: { id: true, value: true },
+      orderBy: { value: "asc" },
+    });
+    return {
+      success: true,
+      data: values,
+    };
+  } catch (e) {
+    console.log("Error fetching attribute values:", e);
+    return {
+      success: false,
+      error: e instanceof Error ? e.message : "Failed to fetch attribute values"
+    };
+  }
+}
+
 // Create a new attribute
-export async function createAttribute(name: string) {
-  try{
+export async function createAttribute(name: string): Promise<ActionResult> {
+  try {
     await getAuthenticatedAdmin();
-    return prisma.attribute.create({ data: { name } });
-  }catch(e){
+    
+    const existing = await prisma.attribute.findFirst({ 
+      where: { name: { equals: name, mode: "insensitive" } } 
+    });
+    
+    if (existing) {
+      return {
+        success: false,
+        error: "Attribute with this name already exists"
+      };
+    }
+    
+    const attribute = await prisma.attribute.create({ data: { name } });
+    
+    return {
+      success: true,
+      data: attribute
+    };
+  } catch (e) {
     console.log("Error creating attribute:", e);
-    return null;
+    return {
+      success: false,
+      error: e instanceof Error ? e.message : "Failed to create attribute"
+    };
   }
 }
 
 // Rename an attribute
-export async function updateAttribute(id: string, name: string) {
-  try{
+export async function updateAttribute(id: string, name: string): Promise<ActionResult> {
+  try {
     await getAuthenticatedAdmin();
-    return prisma.attribute.update({ where: { id }, data: { name } });
-  }catch(e){
+    
+    const existing = await prisma.attribute.findFirst({ 
+      where: { name: { equals: name, mode: "insensitive" } } 
+    });
+    
+    if (existing && existing.id !== id) {
+      return {
+        success: false,
+        error: "Another attribute with this name already exists"
+      };
+    }
+    
+    const attribute = await prisma.attribute.update({ 
+      where: { id }, 
+      data: { name } 
+    });
+    
+    return {
+      success: true,
+      data: attribute
+    };
+  } catch (e) {
     console.log("Error updating attribute:", e);
-    return null;
+    return {
+      success: false,
+      error: e instanceof Error ? e.message : "Failed to update attribute"
+    };
   }
 }
 
 // Create a value under an attribute
-export async function createAttributeValue(attributeId: string, value: string) {
-  try{
+export async function createAttributeValue(attributeId: string, value: string): Promise<ActionResult> {
+  try {
     await getAuthenticatedAdmin();
-    return prisma.attributeValue.create({ data: { attributeId, value } });
-  }catch(e){
+    
+    const attributeValue = await prisma.attributeValue.create({ 
+      data: { attributeId, value } 
+    });
+    
+    return {
+      success: true,
+      data: attributeValue
+    };
+  } catch (e) {
     console.log("Error creating attribute value:", e);
-    return null;
+    return {
+      success: false,
+      error: e instanceof Error ? e.message : "Failed to create attribute value"
+    };
   }
 }
 
 // Update a value
-export async function updateAttributeValue(id: string, value: string) {
-  try{
+export async function updateAttributeValue(id: string, value: string): Promise<ActionResult> {
+  try {
     await getAuthenticatedAdmin();
-    return prisma.attributeValue.update({ where: { id }, data: { value } });
-  }catch(e){
+    
+    const attributeValue = await prisma.attributeValue.update({ 
+      where: { id }, 
+      data: { value } 
+    });
+    
+    return {
+      success: true,
+      data: attributeValue
+    };
+  } catch (e) {
     console.log("Error updating attribute value:", e);
-    return null;
+    return {
+      success: false,
+      error: e instanceof Error ? e.message : "Failed to update attribute value"
+    };
   }
 }
 
 // Delete an attribute and all its values
-export async function deleteAttribute(id: string) {
+export async function deleteAttribute(id: string): Promise<ActionResult> {
   try {
     await getAuthenticatedAdmin();
     
@@ -83,27 +195,31 @@ export async function deleteAttribute(id: string) {
       });
       
       if (usageCount > 0) {
-        throw new Error(
-          `Cannot delete this attribute. One or more of its values are currently being used by ${usageCount} product variant(s). Please remove them from all variants first.`
-        );
+        return {
+          success: false,
+          error: `Cannot delete this attribute. One or more of its values are currently being used by ${usageCount} product variant(s). Please remove them from all variants first.`
+        };
       }
     }
     
     // Delete the attribute (this will cascade delete all its values due to the schema relationship)
-    return await prisma.attribute.delete({ where: { id } });
+    const deleted = await prisma.attribute.delete({ where: { id } });
+    
+    return {
+      success: true,
+      data: deleted
+    };
   } catch (e) {
     console.log("Error deleting attribute:", e);
-    
-    if (e instanceof Error && e.message.includes("Cannot delete")) {
-      throw e;
-    }
-    
-    return null;
+    return {
+      success: false,
+      error: e instanceof Error ? e.message : "Failed to delete attribute"
+    };
   }
 }
 
-// Delete a value (allowed)
-export async function deleteAttributeValue(id: string) {
+// Delete a value
+export async function deleteAttributeValue(id: string): Promise<ActionResult> {
   try {
     await getAuthenticatedAdmin();
     
@@ -113,21 +229,23 @@ export async function deleteAttributeValue(id: string) {
     });
     
     if (usageCount > 0) {
-      throw new Error(
-        `Cannot delete this attribute value. It is currently being used by ${usageCount} product variant(s). Please remove it from all variants first.`
-      );
+      return {
+        success: false,
+        error: `Cannot delete this attribute value. It is currently being used by ${usageCount} product variant(s). Please remove it from all variants first.`
+      };
     }
     
-    return await prisma.attributeValue.delete({ where: { id } });
+    const deleted = await prisma.attributeValue.delete({ where: { id } });
+    
+    return {
+      success: true,
+      data: deleted
+    };
   } catch (e) {
     console.log("Error deleting attribute value:", e);
-    
-    if (e instanceof Error && e.message.includes("Cannot delete")) {
-      throw e;
-    }
-    
-    return null;
+    return {
+      success: false,
+      error: e instanceof Error ? e.message : "Failed to delete attribute value"
+    };
   }
 }
-
-

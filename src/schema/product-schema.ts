@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { zfd } from "zod-form-data";
 
-// Base product: variants carry price/qty/images; product has only primary image and meta
+
 export const createProductSchema = z.object({
   name: z.string().min(1, "Product name is required"),
   description: z.string().optional(),
@@ -11,14 +11,6 @@ export const createProductSchema = z.object({
   image: z.instanceof(File),
 });
 
-export const createProductFormSchema = z.object({
-  name: z.string().min(1, "Product name is required"),
-  description: z.string().optional(),
-  brandId: z.string().optional(),
-  categoryId: z.string().optional(),
-  subcategoryId: z.string().optional(),
-  image: z.instanceof(File).optional(),
-});
 
 export const createProductFormDataSchema = zfd.formData({
   name: zfd.text(z.string().min(1, "Product name is required")),
@@ -43,6 +35,50 @@ export const deleteProductSchema = z.object({
   id: z.string().min(1, "ID is required"),
 });
 
-export type CreateProductFormValues = z.infer<typeof createProductFormSchema>;
+
+
+const VariantOptionSchema = z.object({
+  attributeId: z.string().cuid().or(z.string().regex(/^[0-9a-fA-F]{24}$/)), 
+  valueId: z.string().cuid().or(z.string().regex(/^[0-9a-fA-F]{24}$/)),       
+});
+
+
+const FinalizedVariantSchema = z.object({
+  
+  price: z.number().positive().min(0.01),
+  offerPrice: z.number().optional(), 
+  qty: z.number().int().min(0),
+  
+  
+  images: z.string().url().array().default([]),
+
+  
+  attributes: z.array(VariantOptionSchema).min(1, "A variant must have at least one attribute."),
+});
+
+
+const BaseProductSchema = z.object({
+  name: z.string().min(3, "Name is too short."),
+  description: z.string().optional(),
+  
+  
+  brandId: z.string().cuid().or(z.string().regex(/^[0-9a-fA-F]{24}$/)).nullable(), 
+  categoryId: z.string().cuid().or(z.string().regex(/^[0-9a-fA-F]{24}$/)),
+  subCategoryId: z.string().cuid().or(z.string().regex(/^[0-9a-fA-F]{24}$/)),
+  
+  
+  mainImage: z.string().url(),
+});
+
+
+
+export const CreateProductInputSchema = z.object({
+  productData: BaseProductSchema,
+  variantsData: z.array(FinalizedVariantSchema).min(1, "A configurable product must have at least one variant."),
+});
+
+export type CreateProductInput = z.infer<typeof CreateProductInputSchema>;
+
+
 export type CreateProductValues = z.infer<typeof createProductSchema>;
 export type UpdateProductValues = z.infer<typeof updateProductSchema>;

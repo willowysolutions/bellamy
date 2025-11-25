@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { ProductDetail } from "@/types/product";
+import { ProductDialogForm  } from "@/components/product/product-dialog-form";
 
 interface Category {
   id: string;
@@ -146,22 +147,17 @@ export default function ProductTable({ columns }: ProductTableProps) {
 
       if (categoriesRes.ok) {
         const categoriesData = await categoriesRes.json();
-        console.log("categoriesData", categoriesData);
-        // Fix: Access the data directly since your API returns arrays directly
         setCategories(Array.isArray(categoriesData) ? categoriesData : categoriesData.data || []);
       }
 
       if (brandsRes.ok) {
         const brandsData = await brandsRes.json();
-        console.log("brandsData", brandsData);
-        // Fix: Access the data directly since your API returns arrays directly
         setBrands(Array.isArray(brandsData) ? brandsData : brandsData.data || []);
       }
 
       if (subCategoriesRes.ok) {
         const subCategoriesData = await subCategoriesRes.json();
-        console.log("subCategoriesData", subCategoriesData,Array.isArray(subCategoriesData));
-        // Fix: Access the data directly since your API returns arrays directly
+        console.log("subCategoriesData", subCategoriesData, Array.isArray(subCategoriesData));
       }
     } catch (err) {
       console.error('Error fetching filter data:', err);
@@ -191,6 +187,14 @@ export default function ProductTable({ columns }: ProductTableProps) {
       setLoading(false);
     }
   }, [buildQueryParams]);
+
+  useEffect(() => {
+    const handler = () => {
+      fetchProducts();
+    };
+    window.addEventListener("products:updated", handler);
+    return () => window.removeEventListener("products:updated", handler);
+  }, [fetchProducts]);
 
   // Initial data fetch
   useEffect(() => {
@@ -273,258 +277,281 @@ export default function ProductTable({ columns }: ProductTableProps) {
 
   if (error) {
     return (
-      <Card>
-        <CardContent className="p-6">
-          <div className="text-center text-red-600">
-            Error loading products: {error}
-            <Button 
-              onClick={fetchProducts} 
-              className="ml-2"
-              variant="outline"
-            >
-              Retry
-            </Button>
+      <div className="flex flex-1 flex-col">
+        <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight">Products</h1>
+              <p className="text-muted-foreground">Manage Products</p>
+            </div>
+            <ProductDialogForm  />
           </div>
-        </CardContent>
-      </Card>
+          <Card>
+            <CardContent className="p-6">
+              <div className="text-center text-red-600">
+                Error loading products: {error}
+                <Button 
+                  onClick={fetchProducts} 
+                  className="ml-2"
+                  variant="outline"
+                >
+                  Retry
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-5">
-      {/* Search and Filters Toggle */}
-      <Card>
-        <CardHeader>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <CardTitle>Search & Filters</CardTitle>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center gap-2"
-              >
-                <Filter className="h-4 w-4" />
-                Filters
-                {hasActiveFilters && (
-                  <Badge variant="secondary" className="ml-1">
-                    {[selectedCategoryId, selectedBrandId, searchTerm].filter(Boolean).length}
-                  </Badge>
-                )}
-              </Button>
+    <div className="flex flex-1 flex-col">
+      <div className="@container/main flex flex-1 flex-col gap-2">
+        <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+          {/* Page Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight">Products</h1>
+              <p className="text-muted-foreground">Manage Products</p>
             </div>
-            <CardDescription>Search and filter products</CardDescription>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {/* Search */}
-          <div className="relative mb-4 flex items-center gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search products..."
-                className="pl-8"
-                value={searchTerm}
-                onChange={(e) => handleSearchChange(e.target.value)}
-              />
-            </div>
-            <Button variant="outline" size="sm" onClick={() => fetchProducts()} disabled={loading}>
-              {loading ? "Refreshing..." : "Refresh"}
-            </Button>
+            <ProductDialogForm />
           </div>
 
-          {/* Filters Section */}
-          {showFilters && (
-            <div className="space-y-4 border-t pt-4">
-              <div className="flex items-center justify-between">
-                <h4 className="font-medium">Filters</h4>
-                {hasActiveFilters && (
-                  <Button variant="ghost" size="sm" onClick={clearFilters}>
-                    <X className="h-4 w-4 mr-1" />
-                    Clear All
+          {/* Search and Filters */}
+          <Card>
+            <CardHeader>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle>Search & Filters</CardTitle>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowFilters(!showFilters)}
+                    className="flex items-center gap-2"
+                  >
+                    <Filter className="h-4 w-4" />
+                    Filters
+                    {hasActiveFilters && (
+                      <Badge variant="secondary" className="ml-1">
+                        {[selectedCategoryId, selectedBrandId, searchTerm].filter(Boolean).length}
+                      </Badge>
+                    )}
                   </Button>
+                </div>
+                <CardDescription>Search and filter products</CardDescription>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {/* Search */}
+              <div className="relative mb-4 flex items-center gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search products..."
+                    className="pl-8"
+                    value={searchTerm}
+                    onChange={(e) => handleSearchChange(e.target.value)}
+                  />
+                </div>
+                <Button variant="outline" size="sm" onClick={() => fetchProducts()} disabled={loading}>
+                  {loading ? "Refreshing..." : "Refresh"}
+                </Button>
+              </div>
+
+              {/* Filters Section */}
+              {showFilters && (
+                <div className="space-y-4 border-t pt-4">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-medium">Filters</h4>
+                    {hasActiveFilters && (
+                      <Button variant="ghost" size="sm" onClick={clearFilters}>
+                        <X className="h-4 w-4 mr-1" />
+                        Clear All
+                      </Button>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {/* Category Filter */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Category ({categories.length} available)</label>
+                      <Select value={selectedCategoryId || "all"} onValueChange={handleCategoryChange}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="All Categories" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Categories</SelectItem>
+                          {categories.map((category) => (
+                            <SelectItem key={category.id} value={category.id}>
+                              {category.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Brand Filter */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Brand ({brands.length} available)</label>
+                      <Select value={selectedBrandId || "all"} onValueChange={handleBrandChange}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="All Brands" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Brands</SelectItem>
+                          {brands.map((brand) => (
+                            <SelectItem key={brand.id} value={brand.id}>
+                              {brand.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Sort */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Sort By</label>
+                      <Select value={sortBy} onValueChange={handleSortChange}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Sort by" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {sortOptions.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Table */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Products</CardTitle>
+              <CardDescription>
+                {`Showing ${((currentPage - 1) * pageSize) + 1}-${Math.min(currentPage * pageSize, pagination.totalCount)} of ${pagination.totalCount} products`}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="relative">
+                {loading && (
+                  <div className="absolute inset-0 bg-white/50 flex items-center justify-center z-10">
+                    <div className="text-sm text-muted-foreground">Loading...</div>
+                  </div>
                 )}
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {/* Category Filter */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Category ({categories.length} available)</label>
-                  <Select value={selectedCategoryId || "all"} onValueChange={handleCategoryChange}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="All Categories" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Categories</SelectItem>
-                      {categories.map((category) => (
-                        <SelectItem key={category.id} value={category.id}>
-                          {category.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Brand Filter */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Brand ({brands.length} available)</label>
-                  <Select value={selectedBrandId || "all"} onValueChange={handleBrandChange}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="All Brands" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Brands</SelectItem>
-                      {brands.map((brand) => (
-                        <SelectItem key={brand.id} value={brand.id}>
-                          {brand.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Sort */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Sort By</label>
-                  <Select value={sortBy} onValueChange={handleSortChange}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Sort by" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {sortOptions.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Products</CardTitle>
-          <CardDescription>
-            {
-              `Showing ${((currentPage - 1) * pageSize) + 1}-${Math.min(currentPage * pageSize, pagination.totalCount)} of ${pagination.totalCount} products`
-            }
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="relative">
-            {loading && (
-              <div className="absolute inset-0 bg-white/50 flex items-center justify-center z-10">
-                <div className="text-sm text-muted-foreground">Loading...</div>
-              </div>
-            )}
-            
-            <Table>
-              <TableHeader>
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => (
-                      <TableHead key={header.id}>
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(header.column.columnDef.header, header.getContext())}
-                      </TableHead>
+                
+                <Table>
+                  <TableHeader>
+                    {table.getHeaderGroups().map((headerGroup) => (
+                      <TableRow key={headerGroup.id}>
+                        {headerGroup.headers.map((header) => (
+                          <TableHead key={header.id}>
+                            {header.isPlaceholder
+                              ? null
+                              : flexRender(header.column.columnDef.header, header.getContext())}
+                          </TableHead>
+                        ))}
+                      </TableRow>
                     ))}
-                  </TableRow>
-                ))}
-              </TableHeader>
-              <TableBody>
-                {table.getRowModel().rows?.length ? (
-                  table.getRowModel().rows.map((row) => (
-                    <TableRow key={row.id}>
-                      {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id}>
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableHeader>
+                  <TableBody>
+                    {table.getRowModel().rows?.length ? (
+                      table.getRowModel().rows.map((row) => (
+                        <TableRow key={row.id}>
+                          {row.getVisibleCells().map((cell) => (
+                            <TableCell key={cell.id}>
+                              {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={columns.length} className="h-24 text-center">
+                          No results found
                         </TableCell>
-                      ))}
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={columns.length} className="h-24 text-center">
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
 
-          {/* Pagination Controls */}
-          <div className="flex items-center justify-between space-x-2 py-4">
-            <div className="flex items-center space-x-2">
-              <p className="text-sm font-medium">Rows per page</p>
-              <Select
-                value={pageSize.toString()}
-                onValueChange={handlePageSizeChange}
-              >
-                <SelectTrigger className="h-8 w-[70px]">
-                  <SelectValue placeholder={pageSize.toString()} />
-                </SelectTrigger>
-                <SelectContent side="top">
-                  {[10, 20, 30, 40, 50].map((size) => (
-                    <SelectItem key={size} value={size.toString()}>
-                      {size}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="flex items-center space-x-6 lg:space-x-8">
-              <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-                Page {pagination.currentPage} of {pagination.totalPages}
+              {/* Pagination Controls */}
+              <div className="flex items-center justify-between space-x-2 py-4">
+                <div className="flex items-center space-x-2">
+                  <p className="text-sm font-medium">Rows per page</p>
+                  <Select
+                    value={pageSize.toString()}
+                    onValueChange={handlePageSizeChange}
+                  >
+                    <SelectTrigger className="h-8 w-[70px]">
+                      <SelectValue placeholder={pageSize.toString()} />
+                    </SelectTrigger>
+                    <SelectContent side="top">
+                      {[10, 20, 30, 40, 50].map((size) => (
+                        <SelectItem key={size} value={size.toString()}>
+                          {size}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="flex items-center space-x-6 lg:space-x-8">
+                  <div className="flex w-[100px] items-center justify-center text-sm font-medium">
+                    Page {pagination.currentPage} of {pagination.totalPages}
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Button
+                      variant="outline"
+                      className="hidden h-8 w-8 p-0 lg:flex"
+                      onClick={() => handlePageChange(1)}
+                      disabled={!pagination.hasPreviousPage || loading}
+                    >
+                      <span className="sr-only">Go to first page</span>
+                      <ChevronsLeft className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="h-8 w-8 p-0"
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={!pagination.hasPreviousPage || loading}
+                    >
+                      <span className="sr-only">Go to previous page</span>
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="h-8 w-8 p-0"
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={!pagination.hasNextPage || loading}
+                    >
+                      <span className="sr-only">Go to next page</span>
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="hidden h-8 w-8 p-0 lg:flex"
+                      onClick={() => handlePageChange(pagination.totalPages)}
+                      disabled={!pagination.hasNextPage || loading}
+                    >
+                      <span className="sr-only">Go to last page</span>
+                      <ChevronsRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center space-x-2">
-                <Button
-                  variant="outline"
-                  className="hidden h-8 w-8 p-0 lg:flex"
-                  onClick={() => handlePageChange(1)}
-                  disabled={!pagination.hasPreviousPage || loading}
-                >
-                  <span className="sr-only">Go to first page</span>
-                  <ChevronsLeft className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  className="h-8 w-8 p-0"
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={!pagination.hasPreviousPage || loading}
-                >
-                  <span className="sr-only">Go to previous page</span>
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  className="h-8 w-8 p-0"
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={!pagination.hasNextPage || loading}
-                >
-                  <span className="sr-only">Go to next page</span>
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  className="hidden h-8 w-8 p-0 lg:flex"
-                  onClick={() => handlePageChange(pagination.totalPages)}
-                  disabled={!pagination.hasNextPage || loading}
-                >
-                  <span className="sr-only">Go to last page</span>
-                  <ChevronsRight className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }

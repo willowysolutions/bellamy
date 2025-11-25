@@ -8,7 +8,7 @@ import OrderCheckout from "@/components/orders/OrderCheckout";
 import { isLoggedIn } from "@/lib/utils";
 import { addLocalCartItem, getLocalCart } from "@/lib/local-cart";
 import { Heart } from "lucide-react";
-import { useCart, useWishlist } from '@/context/cartContext';
+import { useCart, useWishlist } from "@/context/cartContext";
 import ShareButton from "../common/Share";
 import { brand, rupee } from "@/constants/values";
 import RelatedProducts from "../RelatedProducts";
@@ -28,6 +28,7 @@ type ProductVariant = {
   id: string;
   price: number;
   qty: number;
+  offerPrice?: number;
   images: string[];
   options: VariantOption[];
 };
@@ -45,6 +46,7 @@ type Product = {
   image: string;
   brand?: { id: string; name: string };
   price: number;
+  offerPrice?: number;
   subimage: string[];
   variants: ProductVariant[];
   attributesCatalog: AttributeCatalog[];
@@ -54,8 +56,12 @@ type Product = {
 export default function ProductDetails({ productId }: { productId: string }) {
   const [product, setProduct] = useState<Product | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
-  const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string>>({});
+  const [selectedVariantId, setSelectedVariantId] = useState<string | null>(
+    null
+  );
+  const [selectedAttributes, setSelectedAttributes] = useState<
+    Record<string, string>
+  >({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isInCart, setIsInCart] = useState(false);
@@ -65,7 +71,7 @@ export default function ProductDetails({ productId }: { productId: string }) {
   const [showCheckout, setShowCheckout] = useState(false);
   const { updateCartCount } = useCart();
   const { updateWishlistCount } = useWishlist();
-  const [quantity, setQuantity] = useState(1); // ✅ Added quantity state
+  const [quantity, setQuantity] = useState(1);
 
   const router = useRouter();
 
@@ -79,8 +85,12 @@ export default function ProductDetails({ productId }: { productId: string }) {
         if (!res.ok) throw new Error("Failed to fetch product");
         const data: Product = await res.json();
 
-        const defaultVariantId = data.defaultVariantId || data.variants[0]?.id || null;
-        const defaultVariant = data.variants.find(v => v.id === defaultVariantId) || data.variants[0] || null;
+        const defaultVariantId =
+          data.defaultVariantId || data.variants[0]?.id || null;
+        const defaultVariant =
+          data.variants.find((v) => v.id === defaultVariantId) ||
+          data.variants[0] ||
+          null;
 
         const initialAttributes: Record<string, string> = {};
         if (defaultVariant) {
@@ -89,14 +99,20 @@ export default function ProductDetails({ productId }: { productId: string }) {
           }
         } else if (data.attributesCatalog) {
           for (const attr of data.attributesCatalog) {
-            if (attr.values[0]) initialAttributes[attr.attributeId] = attr.values[0].valueId;
+            if (attr.values[0])
+              initialAttributes[attr.attributeId] = attr.values[0].valueId;
           }
         }
 
         setProduct(data);
         setSelectedVariantId(defaultVariantId);
         setSelectedAttributes(initialAttributes);
-        setSelectedImage(defaultVariant?.images?.[0] || data.image || data.subimage?.[0] || null);
+        setSelectedImage(
+          defaultVariant?.images?.[0] ||
+            data.image ||
+            data.subimage?.[0] ||
+            null
+        );
 
         if (isLoggedIn()) {
           const cartRes = await fetch("/api/cart", { cache: "no-store" });
@@ -104,19 +120,29 @@ export default function ProductDetails({ productId }: { productId: string }) {
             const items = await cartRes.json();
             // API returns an array of items
             const exists = Array.isArray(items)
-              ? items.some((item: CartItem) => item.variant?.id === (defaultVariantId || ""))
+              ? items.some(
+                  (item: CartItem) =>
+                    item.variant?.id === (defaultVariantId || "")
+                )
               : false;
             setIsInCart(!!exists);
           }
           const wlRes = await fetch("/api/wishlist");
           if (wlRes.ok) {
             const wl = await wlRes.json();
-            const existsW = wl && wl.items?.some((item: { variant: { id: string } }) => item.variant?.id === (defaultVariantId || ""));
+            const existsW =
+              wl &&
+              wl.items?.some(
+                (item: { variant: { id: string } }) =>
+                  item.variant?.id === (defaultVariantId || "")
+              );
             setIsInWishlist(!!existsW);
           }
         } else {
           const localCart = getLocalCart();
-          const exists = localCart.some((item) => item.variantId === (defaultVariantId || ""));
+          const exists = localCart.some(
+            (item) => item.variantId === (defaultVariantId || "")
+          );
           setIsInCart(exists);
         }
       } catch (err) {
@@ -127,6 +153,43 @@ export default function ProductDetails({ productId }: { productId: string }) {
     }
     fetchProduct();
   }, [productId]);
+
+
+  useEffect(() => {    async function checkCartWishlist() {
+      if (isLoggedIn()) {
+        const cartRes = await fetch("/api/cart", { cache: "no-store" });
+        if (cartRes.ok) {
+          const items = await cartRes.json();
+          // API returns an array of items
+          const exists = Array.isArray(items)
+            ? items.some(
+                (item: CartItem) =>
+                  item.variant?.id === (selectedVariantId || "")
+              )
+            : false;
+          setIsInCart(!!exists);
+        }
+        const wlRes = await fetch("/api/wishlist");
+        if (wlRes.ok) {
+          const wl = await wlRes.json();
+          const existsW =
+            wl &&
+            wl.items?.some(
+              (item: { variant: { id: string } }) =>
+                item.variant?.id === (selectedVariantId || "")
+            );
+          setIsInWishlist(!!existsW);
+        }
+      } else {
+        const localCart = getLocalCart();
+        const exists = localCart.some(
+          (item) => item.variantId === (selectedVariantId || "")
+        );
+        setIsInCart(exists);
+      }
+    }
+    checkCartWishlist();
+  }, [selectedVariantId]);
 
   if (loading) {
     return (
@@ -139,10 +202,12 @@ export default function ProductDetails({ productId }: { productId: string }) {
   if (error) return <p className="p-8 text-red-500 text-lg">{error}</p>;
   if (!product) return <p className="p-8 text-lg">Product not found.</p>;
 
-  const selectedVariant = product?.variants.find(v => v.id === selectedVariantId) || null;
+  const selectedVariant =
+    product?.variants.find((v) => v.id === selectedVariantId) || null;
   const price = selectedVariant?.price ?? product?.price ?? 0;
-  const galleryImages = selectedVariant?.images?.length ? selectedVariant.images : [product?.image || "", ...(product?.subimage || [])];
-
+  const galleryImages = selectedVariant?.images?.length
+    ? selectedVariant.images
+    : [product?.image || "", ...(product?.subimage || [])];
 
   const handleAddToCart = () => {
     if (!product || !selectedVariantId) return;
@@ -153,17 +218,19 @@ export default function ProductDetails({ productId }: { productId: string }) {
           const res = await fetch("/api/cart", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            // body: JSON.stringify({ variantId: selectedVariantId, quantity: 1 }),
-            body: JSON.stringify({ variantId: selectedVariantId, quantity }), // ✅ Updated
+            body: JSON.stringify({ variantId: selectedVariantId, quantity }), 
           });
           if (!res.ok) throw new Error("Failed to add to cart");
           await updateCartCount();
-          toast.success(`✅ Added "${capitalizeWords(product.name)}" to your cart!`);
+          toast.success(
+            `Added "${capitalizeWords(product.name)}" to your cart!`
+          );
         } else {
-          // addLocalCartItem(selectedVariantId, 1);
-          addLocalCartItem(selectedVariantId, quantity); // ✅ Updated
+          addLocalCartItem(selectedVariantId, quantity);
           await updateCartCount();
-          toast.success(`🛒 Added "${capitalizeWords(product.name)}" to cart (local)!`);
+          toast.success(
+            `Added "${capitalizeWords(product.name)}" to cart (local)!`
+          );
         }
 
         setIsInCart(true);
@@ -172,10 +239,13 @@ export default function ProductDetails({ productId }: { productId: string }) {
 
         if (error instanceof Error) {
           toast.error(
-            `❌ ${error.message || "Failed to add to cart. Try lowering the quantity."}`
+            ` ${
+              error.message ||
+              "Failed to add to cart. Try lowering the quantity."
+            }`
           );
         } else {
-          toast.error("❌ Failed to add to cart. Please try again.");
+          toast.error(" Failed to add to cart. Please try again.");
         }
       }
     });
@@ -194,10 +264,10 @@ export default function ProductDetails({ productId }: { productId: string }) {
         if (res?.success) {
           setIsInWishlist(true);
           await updateWishlistCount();
-          toast.success(`❤️ Added to wishlist`);
+          toast.success(` Added to wishlist`);
         }
       } catch (error) {
-        console.log(error)
+        console.log(error);
         toast.error("Failed to add to wishlist");
       }
     });
@@ -217,7 +287,12 @@ export default function ProductDetails({ productId }: { productId: string }) {
     <div className="w-full h-full">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-gray-600 mb-6">
-        <button onClick={() => router.push("/")} className="hover:text-gray-900">Home</button>
+        <button
+          onClick={() => router.push("/")}
+          className="hover:text-gray-900"
+        >
+          Home
+        </button>
         <span>/</span>
         <span className="text-gray-400">{capitalizeWords(product.name)}</span>
       </div>
@@ -227,7 +302,10 @@ export default function ProductDetails({ productId }: { productId: string }) {
         {/* Left Column - Images (COMPACTED) */}
         <div className="space-y-3">
           {/* Main Image - Adjusted aspect ratio to 4/5 for a slightly smaller look */}
-          <div className="relative w-full bg-gray-50 rounded-lg overflow-hidden" style={{ aspectRatio: "4/5" }}>
+          <div
+            className="relative w-full bg-gray-50 rounded-lg overflow-hidden"
+            style={{ aspectRatio: "4/5" }}
+          >
             {selectedImage && (
               <Image
                 src={selectedImage}
@@ -245,10 +323,18 @@ export default function ProductDetails({ productId }: { productId: string }) {
                 key={idx}
                 onClick={() => setSelectedImage(img)}
                 // Smaller size for thumbnails (w-16, h-20)
-                className={`relative flex-shrink-0 w-16 h-20 cursor-pointer rounded-md overflow-hidden border-2 transition ${selectedImage === img ? "border-gray-900" : "border-gray-200 hover:border-gray-400"
-                  }`}
+                className={`relative flex-shrink-0 w-16 h-20 cursor-pointer rounded-md overflow-hidden border-2 transition ${
+                  selectedImage === img
+                    ? "border-gray-900"
+                    : "border-gray-200 hover:border-gray-400"
+                }`}
               >
-                <Image src={img} alt="Thumbnail" fill className="object-cover" />
+                <Image
+                  src={img}
+                  alt="Thumbnail"
+                  fill
+                  className="object-cover"
+                />
               </div>
             ))}
           </div>
@@ -258,7 +344,9 @@ export default function ProductDetails({ productId }: { productId: string }) {
         <div className="space-y-6">
           {/* Icons */}
           <div className="flex justify-end gap-3">
-            <ShareButton url={`${window.location.origin}/product/${productId}`} />
+            <ShareButton
+              url={`${window.location.origin}/product/${productId}`}
+            />
             <button
               onClick={handleAddToWishlist}
               disabled={isWishPending}
@@ -286,9 +374,35 @@ export default function ProductDetails({ productId }: { productId: string }) {
 
           {/* Price */}
           <div className="flex items-baseline gap-3">
-            <span className="text-2xl font-semibold text-gray-900">{rupee} {price.toLocaleString()}</span>
-            <span className="text-lg text-gray-400 line-through">MRP {rupee} {(price * 1.2).toFixed(0)}</span>
-            <span className="text-sm text-green-600 font-medium">7% OFF</span>
+            {selectedVariant?.offerPrice ? (
+              <>
+                {/* Offer price (main) */}
+                <span className="text-2xl font-semibold text-gray-900">
+                  {rupee} {selectedVariant.offerPrice.toLocaleString()}
+                </span>
+
+                {/* Original price (line-through) */}
+                <span className="text-lg text-gray-400 line-through">
+                  {rupee} {selectedVariant.price.toLocaleString()}
+                </span>
+
+                {/* Discount percentage */}
+                <span className="text-sm text-green-600 font-medium">
+                  {Math.round(
+                    ((selectedVariant.price - selectedVariant.offerPrice) /
+                      selectedVariant.price) *
+                      100
+                  )}
+                  % OFF
+                </span>
+              </>
+            ) : (
+              // Only normal price
+              <span className="text-2xl font-semibold text-gray-900">
+                {rupee}{" "}
+                {(selectedVariant?.price ?? product.price).toLocaleString()}
+              </span>
+            )}
           </div>
           <p className="text-xs text-gray-500">Inclusive of all taxes</p>
 
@@ -300,23 +414,32 @@ export default function ProductDetails({ productId }: { productId: string }) {
               </p>
               <div className="flex gap-2 flex-wrap">
                 {attr.values.map((val) => {
-                  const isSelected = selectedAttributes[attr.attributeId] === val.valueId;
+                  const isSelected =
+                    selectedAttributes[attr.attributeId] === val.valueId;
                   return (
                     <button
                       key={val.valueId}
                       onClick={() => {
-                        const next = { ...selectedAttributes, [attr.attributeId]: val.valueId };
+                        const next = {
+                          ...selectedAttributes,
+                          [attr.attributeId]: val.valueId,
+                        };
                         setSelectedAttributes(next);
-                        const match = product.variants.find((v) =>
-                          v.options.every((o) => next[o.attributeId] === o.valueId)
-                        ) || null;
+                        const match =
+                          product.variants.find((v) =>
+                            v.options.every(
+                              (o) => next[o.attributeId] === o.valueId
+                            )
+                          ) || null;
                         setSelectedVariantId(match ? match.id : null);
-                        if (match?.images?.[0]) setSelectedImage(match.images[0]);
+                        if (match?.images?.[0])
+                          setSelectedImage(match.images[0]);
                       }}
-                      className={`px-4 py-2 text-sm border rounded transition ${isSelected
+                      className={`px-4 py-2 text-sm border rounded transition ${
+                        isSelected
                           ? "bg-gray-900 text-white border-gray-900"
                           : "bg-white text-gray-900 border-gray-300 hover:border-gray-900"
-                        }`}
+                      }`}
                     >
                       {capitalizeWords(val.value)}
                     </button>
@@ -371,34 +494,52 @@ export default function ProductDetails({ productId }: { productId: string }) {
 
           {/* Product Details */}
           <div className="border-t pt-6 space-y-3">
-            <h3 className="text-sm font-medium text-gray-900 mb-4">Product Details</h3>
+            <h3 className="text-sm font-medium text-gray-900 mb-4">
+              Product Details
+            </h3>
             <div className="space-y-2 text-sm">
               {product.brand && (
                 <div className="flex">
                   <span className="text-gray-500 w-32">Brand:</span>
-                  <span className="text-gray-900 font-medium">{capitalizeWords(product.brand.name)}</span>
+                  <span className="text-gray-900 font-medium">
+                    {capitalizeWords(product.brand.name)}
+                  </span>
                 </div>
               )}
               {selectedVariant && (
                 <>
                   <div className="flex">
                     <span className="text-gray-500 w-32">Availability:</span>
-                    <span className={`font-medium ${selectedVariant.qty > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      {selectedVariant.qty > 0 ? `In Stock (${selectedVariant.qty} available)` : 'Out of Stock'}
+                    <span
+                      className={`font-medium ${
+                        selectedVariant.qty > 0
+                          ? "text-green-600"
+                          : "text-red-600"
+                      }`}
+                    >
+                      {selectedVariant.qty > 0
+                        ? `In Stock (${selectedVariant.qty} available)`
+                        : "Out of Stock"}
                     </span>
                   </div>
                   <div className="flex">
                     <span className="text-gray-500 w-32">SKU:</span>
-                    <span className="text-gray-900">{selectedVariant.id.slice(0, 10).toUpperCase()}</span>
+                    <span className="text-gray-900">
+                      {selectedVariant.id.slice(0, 10).toUpperCase()}
+                    </span>
                   </div>
                 </>
               )}
               {product.attributesCatalog?.map((attr) => {
-                const selectedValue = attr.values.find(v => v.valueId === selectedAttributes[attr.attributeId]);
+                const selectedValue = attr.values.find(
+                  (v) => v.valueId === selectedAttributes[attr.attributeId]
+                );
                 return selectedValue ? (
                   <div key={attr.attributeId} className="flex">
                     <span className="text-gray-500 w-32">{attr.name}:</span>
-                    <span className="text-gray-900">{capitalizeWords(selectedValue.value)}</span>
+                    <span className="text-gray-900">
+                      {capitalizeWords(selectedValue.value)}
+                    </span>
                   </div>
                 ) : null;
               })}
@@ -413,8 +554,12 @@ export default function ProductDetails({ productId }: { productId: string }) {
           {/* Description */}
           {product.description && (
             <div className="border-t pt-6">
-              <h3 className="text-sm font-medium text-gray-900 mb-3">Product Description</h3>
-              <p className="text-sm text-gray-600 leading-relaxed">{product.description}</p>
+              <h3 className="text-sm font-medium text-gray-900 mb-3">
+                Product Description
+              </h3>
+              <p className="text-sm text-gray-600 leading-relaxed">
+                {product.description}
+              </p>
             </div>
           )}
         </div>
@@ -427,18 +572,16 @@ export default function ProductDetails({ productId }: { productId: string }) {
             {
               id: selectedVariantId || product.id,
               name: capitalizeWords(product.name),
-              price: price,
-              quantity, // ✅ Updated
+              price: product.offerPrice || price,
+              quantity,
               image: selectedImage ?? product.image ?? undefined,
             },
           ]}
-          // total={price * 1}
-          total={price * quantity} // ✅ Updated
+          total={(product.offerPrice || price) * quantity}
           onClose={() => setShowCheckout(false)}
         />
       )}
-      <RelatedProducts brand={product.brand!}/>
+      <RelatedProducts brand={product.brand!} />
     </div>
-
   );
 }

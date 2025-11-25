@@ -9,8 +9,6 @@ import { zfd } from "zod-form-data";
 import { z } from "zod";
 import { getAuthenticatedAdmin } from "./admin-user-action";
 
-
-
 // ✅ Schemas
 const createCategorySchema = zfd.formData({
   name: zfd.text(),
@@ -32,14 +30,33 @@ export const createCategoryAction = actionClient
   .inputSchema(createCategorySchema)
   .action(async ({ parsedInput }) => {
     try {
-            await getAuthenticatedAdmin()
+      await getAuthenticatedAdmin();
       
       let photoUrl: string = "";
+      console.log("started");
+      
       if (parsedInput.image && parsedInput.image.size > 0) {
         photoUrl = await uploadPhoto(parsedInput.image);
       }
-      if (!photoUrl) throw new Error("Image is required");
+      if (!photoUrl) {
+        return { 
+          success: false, 
+          error: "Image is required" 
+        };
+      }
 
+      const existing = await prisma.category.findFirst({ 
+        where: { name: parsedInput.name } 
+      });
+      
+      if (existing) {
+        console.log('Category already exist');
+        return { 
+          success: false, 
+          error: "Category with this name already exists" 
+        };
+      }
+      
       const category = await prisma.category.create({
         data: {
           name: parsedInput.name,
@@ -48,10 +65,17 @@ export const createCategoryAction = actionClient
       });
 
       revalidatePath("/category");
-      return { success: true, data: category, message: "Category created successfully" };
+      return { 
+        success: true, 
+        data: category, 
+        message: "Category created successfully" 
+      };
     } catch (error) {
       console.error("Create category error:", error);
-      throw new Error(error instanceof Error ? error.message : "Failed to create category");
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : "Failed to create category" 
+      };
     }
   });
 
@@ -66,13 +90,26 @@ export const updateCategoryAction = actionClient
   .inputSchema(updateCategorySchema)
   .action(async ({ parsedInput }) => {
     try {
-            await getAuthenticatedAdmin()
+      await getAuthenticatedAdmin();
 
       let photoUrl: string | undefined;
       if (parsedInput.image && parsedInput.image.size > 0) {
         photoUrl = await uploadPhoto(parsedInput.image);
       }
 
+      const existing = await prisma.category.findFirst({ 
+        where: { 
+          name: { equals: parsedInput.name, mode: "insensitive" } 
+        } 
+      });
+      
+      if (existing && existing.id !== parsedInput.id) {
+        return { 
+          success: false, 
+          error: "Another category with this name already exists" 
+        };
+      }
+      
       const updated = await prisma.category.update({
         where: { id: parsedInput.id },
         data: {
@@ -82,10 +119,17 @@ export const updateCategoryAction = actionClient
       });
 
       revalidatePath("/category");
-      return { success: true, data: updated, message: "Category updated successfully" };
+      return { 
+        success: true, 
+        data: updated, 
+        message: "Category updated successfully" 
+      };
     } catch (error) {
       console.error("Update category error:", error);
-      throw new Error(error instanceof Error ? error.message : "Failed to update category");
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : "Failed to update category" 
+      };
     }
   });
 
@@ -94,12 +138,18 @@ export const deleteCategoryAction = actionClient
   .inputSchema(deleteCategorySchema)
   .action(async ({ parsedInput }) => {
     try {
-            await getAuthenticatedAdmin()
+      await getAuthenticatedAdmin();
 
       const category = await prisma.category.findUnique({
         where: { id: parsedInput.id },
       });
-      if (!category) throw new Error("Category not found");
+      
+      if (!category) {
+        return { 
+          success: false, 
+          error: "Category not found" 
+        };
+      }
 
       // Optional: also delete from Cloudinary
       if (category.image) {
@@ -112,9 +162,15 @@ export const deleteCategoryAction = actionClient
       await prisma.category.delete({ where: { id: parsedInput.id } });
 
       revalidatePath("/category");
-      return { success: true, message: "Category deleted successfully" };
+      return { 
+        success: true, 
+        message: "Category deleted successfully" 
+      };
     } catch (error) {
       console.error("Delete category error:", error);
-      throw new Error(error instanceof Error ? error.message : "Failed to delete category");
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : "Failed to delete category" 
+      };
     }
   });
