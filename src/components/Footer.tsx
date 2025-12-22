@@ -9,7 +9,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Company Info */}
           <div className="space-y-4">
-            <h3 className="text-2xl font-bold">BELLAMY</h3>
+            <h3 className="text-2xl font-bold">Deco moja</h3>
             <p className="text-gray-300 text-sm leading-relaxed">
               Your trusted partner for quality products. We deliver excellence 
               with every purchase, ensuring customer satisfaction and premium quality.
@@ -124,7 +124,7 @@ export default function Footer() {
                 <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
-                <span className="text-gray-300">info@bellamy.com</span>
+                <span className="text-gray-300">info@decomoja.com</span>
               </div>
             </div>
           </div>
@@ -135,7 +135,7 @@ export default function Footer() {
         <div className="page-wrap">
           <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
             <div className="text-sm text-gray-400">
-              © 2024 Bellamy. All rights reserved.
+              © 2024 Deco moja. All rights reserved.
             </div>
             <div className="flex space-x-6 text-sm">
               <Link href="#" className="text-gray-400 hover:text-white transition-colors">

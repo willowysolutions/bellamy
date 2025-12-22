@@ -10,7 +10,7 @@ export default function OurStoryPage() {
           <h1 className="page-title">Our Story</h1>
           <p className="text-xl text-blue-100 leading-relaxed">
             From humble beginnings to becoming a trusted name in quality products, 
-            discover the journey that shaped Bellamy into what it is today.
+            discover the journey that shaped Deco moja into what it is today.
           </p>
         </div>
       </section>
@@ -24,7 +24,7 @@ export default function OurStoryPage() {
               <h2 className="text-3xl font-serif text-gray-800 mb-6">The Beginning</h2>
               <div className="space-y-4 text-gray-600 leading-relaxed">
                 <p>
-                  Founded in 2015, Bellamy started as a small family business with a simple mission: 
+                  Founded in 2015, Deco moja started as a small family business with a simple mission: 
                   to provide high-quality products that make a difference in people&apos;s lives. What began 
                   as a passion project in a garage has grown into a trusted brand serving customers worldwide.
                 </p>
@@ -112,7 +112,7 @@ export default function OurStoryPage() {
                 <div className="bg-blue-50 p-6 rounded-lg">
                   <h3 className="text-xl font-semibold text-gray-800 mb-3">2015 - The Foundation</h3>
                   <p className="text-gray-600">
-                    Bellamy was founded with a vision to create quality products. We started 
+                    Deco moja was founded with a vision to create quality products. We started 
                     with our first product line and a small team of dedicated individuals.
                   </p>
                 </div>
@@ -154,7 +154,7 @@ export default function OurStoryPage() {
                 <div className="bg-orange-50 p-6 rounded-lg">
                   <h3 className="text-xl font-semibold text-gray-800 mb-3">2024 - Today</h3>
                   <p className="text-gray-600">
-                    Today, Bellamy serves over 100,000 customers worldwide with a 
+                    Today, Deco moja serves over 100,000 customers worldwide with a 
                     comprehensive range of products and exceptional customer service.
                   </p>
                 </div>
@@ -170,7 +170,7 @@ export default function OurStoryPage() {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-serif text-gray-800 mb-4">Meet Our Team</h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
-              The passionate individuals behind Bellamy&apos;s success, dedicated to bringing you the best products and service.
+              The passionate individuals behind Deco moja&apos;s success, dedicated to bringing you the best products and service.
             </p>
           </div>
           
@@ -221,7 +221,7 @@ export default function OurStoryPage() {
           <h2 className="text-2xl font-serif text-gray-800 mb-4">Join Our Story</h2>
           <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
             Be part of our journey as we continue to grow and serve customers worldwide. 
-            Discover our products and experience the Bellamy difference.
+            Discover our products and experience the Deco moja difference.
           </p>
           <div className="space-x-4">
             <a 

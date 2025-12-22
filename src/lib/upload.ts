@@ -11,7 +11,7 @@ const uploadPhoto = async (photoFile: File | null) => {
 
     // Upload the base64 string to Cloudinary
     const uploadResult = await cloudinary.uploader.upload(`data:image/jpeg;base64,${base64}`, {
-        folder: 'BELLAMY', // Optional: organize your uploads
+        folder: 'Deco moja', // Optional: organize your uploads
     });
 
     return uploadResult.secure_url; 
