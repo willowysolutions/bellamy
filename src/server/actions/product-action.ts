@@ -80,7 +80,7 @@ export const updateProductAction = actionClient
           const oldPublicId = existingProduct.image.split("/").pop()?.split(".")[0];
           if (oldPublicId) {
             try {
-              await cloudinary.uploader.destroy(`BELLAMY/${oldPublicId}`);
+              await cloudinary.uploader.destroy(`Deco moja/${oldPublicId}`);
               console.log("Deleted old main image:", oldPublicId);
             } catch (error) {
               console.warn("Failed to delete old main image:", error);
@@ -149,7 +149,7 @@ export const deleteProductAction = actionClient
         const oldPublicId = product.image.split("/").pop()?.split(".")[0];
         if (oldPublicId) {
           try {
-            await cloudinary.uploader.destroy(`BELLAMY/${oldPublicId}`);
+            await cloudinary.uploader.destroy(`Deco moja/${oldPublicId}`);
           } catch (e) {
             console.warn("Failed to delete product image:", e);
           }

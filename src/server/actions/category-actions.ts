@@ -155,7 +155,7 @@ export const deleteCategoryAction = actionClient
       if (category.image) {
         const publicId = category.image.split("/").pop()?.split(".")[0];
         if (publicId) {
-          await cloudinary.uploader.destroy(`BELLAMY/${publicId}`);
+          await cloudinary.uploader.destroy(`Deco moja/${publicId}`);
         }
       }
 

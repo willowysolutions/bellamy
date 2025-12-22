@@ -189,10 +189,10 @@ export default function Header() {
             {/* Logo */}
             <Link
               href="/"
-              className={`text-xl sm:text-2xl md:3xl font-bold ${bodoniModa.className}`}
+              className={`text-xl sm:text-3xl md:4xl font-bold ${bodoniModa.className}`}
               style={{ color: brand.primary }}
             >
-              BELLAMY
+              DECO MOJA
             </Link>
           </div>
 
