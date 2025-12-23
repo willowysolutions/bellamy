@@ -228,6 +228,7 @@ export default function BestSellers() {
           >
             {topRow.map((product) => (
               <BestSellerCard
+                variantId={product.variantId}
                 key={product.id}
                 id={product.id}
                 name={product.title}
@@ -294,6 +295,7 @@ export default function BestSellers() {
             >
               {bottomRow.map((product) => (
                 <BestSellerCard
+                  variantId={product.variantId}
                   key={product.id}
                   id={product.id}
                   name={product.title}
