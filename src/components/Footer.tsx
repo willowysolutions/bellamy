@@ -69,7 +69,7 @@ export default function Footer() {
           </div>
 
           {/* Customer Service */}
-          <div className="space-y-4">
+          {/* <div className="space-y-4">
             <h4 className="text-lg font-semibold">Customer Service</h4>
             <ul className="space-y-2 text-sm">
               <li>
@@ -98,7 +98,7 @@ export default function Footer() {
                 </Link>
               </li>
             </ul>
-          </div>
+          </div> */}
 
           {/* Contact Info */}
           <div className="space-y-4">
