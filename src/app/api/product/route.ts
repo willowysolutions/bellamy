@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { createProductAction } from "@/server/actions/product-action";
 import { auth } from "@/lib/auth";
+import { createProductAction } from "@/server/actions/product-action";
 
 
 export async function GET(request: Request) {

@@ -3,6 +3,7 @@ import CategorySection from "@/components/home-category/categoryListing";
 import BestSellers from "../components/bestSeller/BestSellers";
 import Footer from "../components/Footer";
 import CTAComponent from "@/components/CTAComponent";
+import LatestList from "@/components/latest/LatestList";
 
 export default function Homepage() {
   return (
@@ -16,6 +17,8 @@ export default function Homepage() {
       {/* Best Sellers */}
       <BestSellers />
 
+      <LatestList />
+      
       {/* CTA */}
       <CTAComponent />
 
