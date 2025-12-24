@@ -11,7 +11,7 @@ export async function GET(request: Request) {
     const userId = session?.user.id;
 
     const products = await prisma.product.findMany({
-      take: 20,
+      take: 14,
       orderBy: { createdAt: "desc" },
       include: {
         category: true,
