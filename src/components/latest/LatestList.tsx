@@ -24,10 +24,10 @@ export default function LatestList() {
       try {
         const res = await fetch("/api/latest-products", { cache: "no-store" });
         const data = await res.json();
-        console.log("data fgrom latest",data)
+        console.log("data from latest", data);
         setProducts(data || []);
       } catch (e) {
-        console.log(e)
+        console.log(e);
         setProducts([]);
       } finally {
         setLoading(false);
@@ -47,7 +47,9 @@ export default function LatestList() {
 
   if (!products.length) {
     return (
-      <div className="text-center py-10 text-gray-500">No latest products found.</div>
+      <div className="text-center py-10 text-gray-500">
+        No latest products found.
+      </div>
     );
   }
 
@@ -55,9 +57,7 @@ export default function LatestList() {
     <section className="w-full">
       <div className="page-wrap">
         <h2 className="page-title">Latest Products</h2>
-        <div
-          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 lg:gap-8"
-        >
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 lg:gap-8">
           {products.map((product) => (
             <ProductCard
               key={product.id}
@@ -77,27 +77,3 @@ export default function LatestList() {
     </section>
   );
 }
-
-
-// 'use client'
-// import React, { useEffect } from 'react'
-
-// function LatestList() {
-//   const fetchProducts = async()=>{
-//    try{
-//      const res = await fetch("/api/latest-products", { cache: "no-store" });
-//         const data = await res.json();
-//         console.log("data fgrom latest",data)
-//    }catch(err){
-//     console.log(err, "error from latest")
-//    }
-//   }
-//   useEffect(()=>{
-// fetchProducts()
-//   },[])
-//   return (
-//     <div>LatestList</div>
-//   )
-// }
-
-// export default LatestList

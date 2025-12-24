@@ -550,7 +550,7 @@ export default function ShopProductListing({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 overflow-y-auto h-screen scrollbar-hide">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 overflow-y-auto h-screen scrollbar-hide">
                   {products.map((p) => (
                     <div key={p.id} className="group">
                       <ProductCard

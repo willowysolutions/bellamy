@@ -17,10 +17,10 @@ export default function Homepage() {
       {/* Best Sellers */}
       <BestSellers />
 
-      <LatestList />
-      
       {/* CTA */}
       <CTAComponent />
+
+      <LatestList />
 
       <Footer />
     </div>
