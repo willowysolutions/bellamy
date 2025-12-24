@@ -34,30 +34,34 @@ export const brand = {
   };
 
 
-  export const CTASlides = [
-    {
-      image: "https://i.pinimg.com/736x/fa/db/6b/fadb6ba2f948d071e8d821bd3b2036c3.jpg",
-      title: "The Party Palette",
-      subtitle: "Craft your Signature Party Look",
-      bgColor: "#8B7355"
-    },
-    {
-      image: "https://i.pinimg.com/736x/1a/cf/84/1acf84e6190ef6ea7e18eb391effbc1e.jpg",
-      title: "Silken Stories",
-      subtitle: "Where Heritage Meets Every day Chic",
-      bgColor: "#B8D4E8",
-      titleColor: "#E91E63"
-    },
-    {
-      image: "https://i.pinimg.com/736x/8f/9d/f3/8f9df389317b4d405c3b21dbc999d0f5.jpg",
-      title: "Summer Dreams",
-      subtitle: "Bright Colors for Bright Days",
-      bgColor: "#FFE5D9"
-    },
-    {
-      image: "https://i.pinimg.com/1200x/18/bc/c5/18bcc544b51289bd8b18bf989c0a4c46.jpg",
-      title: "Princess Collection",
-      subtitle: "Every Girl Deserves to Sparkle",
-      bgColor: "#F8E8EE"
-    }
-  ];
+export const CTASlides = [
+  {
+    image: "https://i.pinimg.com/736x/fa/db/6b/fadb6ba2f948d071e8d821bd3b2036c3.jpg",
+    title: "Sleepwear Elegance",
+    subtitle: "Shop the Softest Sleepwear",
+    route: "/shop/category/69453c477e885ebc186cbf30",
+    bgColor: "#8B7355"
+  },
+  {
+    image: "https://i.pinimg.com/736x/1a/cf/84/1acf84e6190ef6ea7e18eb391effbc1e.jpg",
+    title: "Surfe through Style",
+    subtitle: "Dive Into Our Latest Collection",
+    bgColor: "#B8D4E8",
+    route: "/shop",
+    titleColor: "#E91E63"
+  },
+  {
+    image: "https://i.pinimg.com/736x/8f/9d/f3/8f9df389317b4d405c3b21dbc999d0f5.jpg",
+    title: "Accessorize Your Life",
+    route: '/shop/category/69453c867e885ebc186cbf32',
+    subtitle: "Discover Statement Accessories",
+    bgColor: "#FFE5D9"
+  },
+  {
+    image: "https://i.pinimg.com/1200x/18/bc/c5/18bcc544b51289bd8b18bf989c0a4c46.jpg",
+    title: "Outerwear that Inspires",
+    route: '/shop/category/69453c6a7e885ebc186cbf31',
+    subtitle: "Find Your Perfect Jacket",
+    bgColor: "#F8E8EE"
+  }
+];

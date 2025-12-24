@@ -1,6 +1,5 @@
 "use client";
 
-import { isLoggedIn } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 import { useKeenSlider, KeenSliderInstance } from "keen-slider/react";
@@ -13,6 +12,7 @@ interface CTACardProps {
   title: string;
   subtitle: string;
   bgColor: string;
+  route: string;
   titleColor?: string;
   priority?: boolean;
 }
@@ -23,6 +23,7 @@ function CTACard({
   subtitle,
   bgColor,
   titleColor,
+  route,
   priority = false,
 }: CTACardProps) {
   const getTextColor = () => {
@@ -70,10 +71,10 @@ function CTACard({
 
         <div className="w-full flex justify-center mt-6">
           <Link
-            href={isLoggedIn() ? "/shop" : "/login"}
+            href={route}
             className="px-8 py-3 rounded-full bg-white text-gray-900 font-medium text-base md:text-lg shadow hover:scale-105 transition-transform"
           >
-            Shop Now
+            Checkout Now
           </Link>
         </div>
       </div>
@@ -139,6 +140,7 @@ export default function CTASlider() {
         {CTASlides.map((slide, index) => (
           <div key={index} className="keen-slider__slide px-2">
             <CTACard
+              route={slide.route}
               image={slide.image}
               title={slide.title}
               subtitle={slide.subtitle}
