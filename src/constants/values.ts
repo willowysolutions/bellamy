@@ -17,6 +17,17 @@ export const MobileBannerImages = [
   "https://i.pinimg.com/1200x/5c/59/a2/5c59a24313cfec21cca850c99ebe55ab.jpg"
 ];
 
+export const NewBannerImages = [
+  "https://res.cloudinary.com/doseusf1y/image/upload/v1766568541/banner_res3m8.webp",
+  "https://res.cloudinary.com/doseusf1y/image/upload/v1766569442/Screenshot_2025-12-24_150801_s7sfdz.png",
+  "https://res.cloudinary.com/doseusf1y/image/upload/v1766568555/banner2_enzt3n.webp",
+  "https://res.cloudinary.com/doseusf1y/image/upload/v1766569442/Screenshot_2025-12-24_150815_yhwfar.png",
+  "https://res.cloudinary.com/doseusf1y/image/upload/v1766568555/banner3_hopch2.webp",
+  "https://res.cloudinary.com/doseusf1y/image/upload/v1766569442/Screenshot_2025-12-24_151304_llmie1.png",
+  "https://res.cloudinary.com/doseusf1y/image/upload/v1766568555/banner4_mkogi7.webp",
+  "https://res.cloudinary.com/doseusf1y/image/upload/v1766569466/Screenshot_2025-12-24_151417_qzq0l4.png"
+];
+
 export const brand = {
     primary: "#8B1D3F", // maroon
     primaryDark: "#6F1632",

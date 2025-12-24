@@ -2,20 +2,15 @@
 
 import Image from "next/image";
 import Slider from "react-slick";
-import Link from "next/link";
 import { useMemo } from "react";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import { BannerImages } from "@/constants/values";
+import { NewBannerImages } from "@/constants/values";
 
 type BannerSlide = {
   id: number;
-  image: string;
-  title: string;
-  subtitle: string;
-  buttonLabel: string;
-  buttonLink: string;
-  align?: "left" | "center" | "right";
+  desktopImage: string;
+  mobileImage: string;
 };
 
 export default function Banner() {
@@ -23,58 +18,29 @@ export default function Banner() {
     () => [
       {
         id: 1,
-        image: BannerImages[0],
-        title: "Dress Your Little Ones in Pure Joy",
-        subtitle:
-          "Playful outfits for every mood — crafted for comfort, made for fun.",
-        buttonLabel: "Shop Collection",
-        buttonLink: "/shop",
-        align: "left",
+        desktopImage: NewBannerImages[0],
+        mobileImage: NewBannerImages[1],
       },
       {
         id: 2,
-        image: BannerImages[1],
-        title: "Trendy, Comfy, and Always Adorable",
-        subtitle: "Let your kids shine in every season with our stylish picks.",
-        buttonLabel: "Explore New Arrivals",
-        buttonLink: "/shop",
-        align: "center",
+        desktopImage: NewBannerImages[2],
+        mobileImage: NewBannerImages[3],
       },
       {
         id: 3,
-        image: BannerImages[2],
-        title: "From Playtime to Partytime",
-        subtitle:
-          "Discover our range of quality kidswear for every joyful occasion.",
-        buttonLabel: "Browse Styles",
-        buttonLink: "/shop",
-        align: "right",
+        desktopImage: NewBannerImages[4],
+        mobileImage: NewBannerImages[5],
       },
       {
         id: 4,
-        image: BannerImages[3],
-        title: "Everyday Comfort, Endless Smiles",
-        subtitle:
-          "Soft fabrics, happy colors, and joyful vibes — made for little explorers.",
-        buttonLabel: "Start Shopping",
-        buttonLink: "/shop",
-        align: "left",
-      },
-      {
-        id: 5,
-        image: BannerImages[4],
-        title: "Bright Looks for Brighter Days",
-        subtitle:
-          "Stylish, sustainable, and designed to keep up with their adventures.",
-        buttonLabel: "Shop Now",
-        buttonLink: "/shop",
-        align: "center",
+        desktopImage: NewBannerImages[6],
+        mobileImage: NewBannerImages[7],
       },
     ],
     []
   );
 
-  // Desktop slider settings with progress bar indicator
+  // Desktop slider settings
   const desktopSettings = useMemo(
     () => ({
       dots: true,
@@ -89,20 +55,18 @@ export default function Banner() {
       swipeToSlide: true,
       adaptiveHeight: false,
       cssEase: "ease-in-out",
-      dotsClass: "slick-dots !flex !items-center !justify-center !gap-2 !bottom-8 !left-1/2 !-translate-x-1/2",
+      dotsClass: "slick-dots !flex !items-center !justify-center !gap-2 !-bottom-10",
       appendDots: (dots: React.ReactNode) => (
         <ul className="flex items-center justify-center gap-2"> {dots} </ul>
       ),
       customPaging: () => (
-        <button className="w-12 h-1 bg-white/40 rounded-full overflow-hidden hover:bg-white/60 transition-all cursor-pointer block">
-          <div className="h-full bg-white rounded-full w-0 group-[.slick-active]:w-full group-[.slick-active]:animate-[progress_3.5s_linear]" />
-        </button>
+        <div className="w-12 h-1 bg-gray-400 rounded-full overflow-hidden transition-all cursor-pointer" />
       ),
     }),
     []
   );
 
-  // Mobile slider settings with modern dot indicators
+  // Mobile slider settings
   const mobileSettings = useMemo(
     () => ({
       dots: true,
@@ -117,7 +81,7 @@ export default function Banner() {
       swipeToSlide: true,
       adaptiveHeight: false,
       cssEase: "ease-in-out",
-      dotsClass: "slick-dots !flex !items-center !justify-center !gap-1.5 !-bottom-8 !left-1/2 !-translate-x-1/2",
+      dotsClass: "slick-dots !flex !items-center !justify-center !gap-1.5 !-bottom-8",
       appendDots: (dots: React.ReactNode) => (
         <ul className="flex items-center justify-center gap-1.5"> {dots} </ul>
       ),
@@ -129,50 +93,19 @@ export default function Banner() {
   );
 
   return (
-    <section className="relative w-full h-[80vh] overflow-hidden">
+    <section className="relative w-full h-[80vh] overflow-visible pb-12 mb-12">
       {/* Desktop Slider */}
-      <div className="hidden md:block h-full [&_.slick-prev]:!w-12 [&_.slick-prev]:!h-12 [&_.slick-prev]:!left-6 [&_.slick-prev]:!z-20 [&_.slick-next]:!w-12 [&_.slick-next]:!h-12 [&_.slick-next]:!right-6 [&_.slick-next]:!z-20 [&_.slick-prev:before]:!text-5xl [&_.slick-prev:before]:!opacity-80 [&_.slick-next:before]:!text-5xl [&_.slick-next:before]:!opacity-80 [&_.slick-prev:hover:before]:!opacity-100 [&_.slick-next:hover:before]:!opacity-100 [&_.slick-dots_li]:!w-12 [&_.slick-dots_li]:!h-1 [&_.slick-dots_li]:!m-0 [&_.slick-dots_li_button]:!w-full [&_.slick-dots_li_button]:!h-full [&_.slick-dots_li_button]:!p-0 [&_.slick-dots_li_button:before]:!hidden [&_.slick-dots_li.slick-active_button]:!bg-white">
+      <div className="hidden md:block h-[80vh] [&_.slick-prev]:!w-10 [&_.slick-prev]:!h-16 [&_.slick-prev]:!left-2 [&_.slick-prev]:!z-20 [&_.slick-prev]:!bg-white/20 [&_.slick-prev]:!rounded-md [&_.slick-prev]:hover:!bg-white/40 [&_.slick-prev]:!transition-all [&_.slick-next]:!w-10 [&_.slick-next]:!h-16 [&_.slick-next]:!right-2 [&_.slick-next]:!z-20 [&_.slick-next]:!bg-white/20 [&_.slick-next]:!rounded-md [&_.slick-next]:hover:!bg-white/40 [&_.slick-next]:!transition-all [&_.slick-prev:before]:!text-3xl [&_.slick-prev:before]:!opacity-60 [&_.slick-next:before]:!text-3xl [&_.slick-next:before]:!opacity-60 [&_.slick-prev:hover:before]:!opacity-100 [&_.slick-next:hover:before]:!opacity-100 [&_.slick-dots_li]:!w-12 [&_.slick-dots_li]:!h-1 [&_.slick-dots_li]:!m-0 [&_.slick-dots_li_button]:!w-full [&_.slick-dots_li_button]:!h-full [&_.slick-dots_li_button]:!p-0 [&_.slick-dots_li_button:before]:!hidden [&_.slick-dots_li.slick-active_button]:!bg-white">
         <Slider {...desktopSettings} className="h-full">
           {slides.map((slide) => (
             <div key={slide.id} className="relative w-full h-[80vh]">
-              {/* Background Image */}
               <Image
-                src={slide.image}
-                alt={slide.title}
+                src={slide.desktopImage}
+                alt={`Banner slide ${slide.id}`}
                 fill
                 priority={slide.id === 1}
                 className="object-cover"
               />
-
-              {/* Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(255,200,100,0.15),transparent_60%)]" />
-
-              {/* Text Content */}
-              <div
-                className={`relative z-10 h-full flex items-center px-12 lg:px-24 xl:px-32 ${
-                  slide.align === "center"
-                    ? "justify-center text-center"
-                    : slide.align === "right"
-                    ? "justify-end text-right"
-                    : "justify-start text-left"
-                }`}
-              >
-                <div className="max-w-3xl">
-                  <h1 className="text-white text-6xl md:text-7xl lg:text-8xl font-bold leading-tight drop-shadow-2xl tracking-tight">
-                    {slide.title}
-                  </h1>
-                  <p className="mt-6 lg:mt-8 text-white/95 text-xl md:text-2xl lg:text-3xl max-w-2xl drop-shadow-lg font-medium leading-relaxed">
-                    {slide.subtitle}
-                  </p>
-                  <Link
-                    href={slide.buttonLink}
-                    className="mt-10 lg:mt-12 inline-flex items-center justify-center rounded-full bg-amber-300/90 hover:bg-amber-300 text-stone-900 px-10 lg:px-12 py-4 lg:py-5 text-lg lg:text-xl font-bold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-                  >
-                    {slide.buttonLabel}
-                  </Link>
-                </div>
-              </div>
             </div>
           ))}
         </Slider>
@@ -184,35 +117,13 @@ export default function Banner() {
           {slides.map((slide) => (
             <div key={slide.id} className="px-0.5">
               <div className="relative w-full h-[calc(80vh-2.5rem)] rounded-2xl overflow-hidden shadow-xl">
-                {/* Background Image */}
                 <Image
-                  src={slide.image}
-                  alt={slide.title}
+                  src={slide.mobileImage}
+                  alt={`Banner slide ${slide.id}`}
                   fill
                   priority={slide.id === 1}
                   className="object-cover"
                 />
-
-                {/* Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-
-                {/* Text Content */}
-                <div className="relative z-10 h-full flex items-end p-4 pb-6">
-                  <div className="w-full text-left">
-                    <h1 className="text-white text-3xl sm:text-4xl font-bold leading-tight drop-shadow-2xl tracking-tight">
-                      {slide.title}
-                    </h1>
-                    <p className="mt-2 text-white/95 text-base sm:text-lg drop-shadow-lg font-medium leading-relaxed">
-                      {slide.subtitle}
-                    </p>
-                    <Link
-                      href={slide.buttonLink}
-                      className="mt-4 inline-flex items-center justify-center rounded-full bg-amber-300/90 hover:bg-amber-300 text-stone-900 px-6 py-3 text-sm sm:text-base font-bold shadow-lg hover:shadow-xl transition-all duration-300 active:scale-95"
-                    >
-                      {slide.buttonLabel}
-                    </Link>
-                  </div>
-                </div>
               </div>
             </div>
           ))}
