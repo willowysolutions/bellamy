@@ -105,7 +105,7 @@ export default function Banner() {
                 alt={`Banner slide ${slide.id}`}
                 fill
                 priority={slide.id === 1}
-                className="object-cover"
+                className="object-cover object-top"
               />
             </div>
           ))}
@@ -123,7 +123,7 @@ export default function Banner() {
                   alt={`Banner slide ${slide.id}`}
                   fill
                   priority={slide.id === 1}
-                  className="object-cover"
+                  className="object-cover object-top"
                 />
               </div>
             </div>

@@ -9,7 +9,7 @@ export default async function CategoryPage({ params }: Props) {
   const { id } = await params;
 
   return (
-    <div>
+    <div className="bg-white">
       <div className="page-wrap min-h-screen">
         <ShopProductListing categoryId={id} />
       </div>

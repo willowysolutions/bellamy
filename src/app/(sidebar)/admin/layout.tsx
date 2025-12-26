@@ -1,3 +1,4 @@
+// src/app/%28sidebar%29/admin/layout.tsx
 import type { Metadata } from "next";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { SiteHeader } from "@/components/common/site-header";

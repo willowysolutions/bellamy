@@ -4,7 +4,7 @@ import React from 'react'
 
 function ShopPage() {
   return (
-      <div>
+      <div className='bg-white'>
       <div className="page-wrap min-h-screen">
         <ShopList />
       </div>

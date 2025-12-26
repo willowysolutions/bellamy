@@ -299,8 +299,8 @@ export default function ShopProductListing({
       onClick={onClick}
       className={`w-full text-left px-4 py-3 text-sm border-b border-gray-100 transition-colors ${
         isSelected
-          ? "text-white"
-          : "text-gray-700 hover:bg-gray-50"
+          ? "text-gray-900"
+          : "text-gray-900 hover:bg-gray-50"
       }`}
       style={isSelected ? { backgroundColor: brand.primary } : {}}
     >
@@ -354,7 +354,7 @@ export default function ShopProductListing({
             <span className="text-xs sm:text-sm text-gray-700 font-medium uppercase tracking-wide">
               SORT BY :
             </span>
-            <div className="relative">
+            <div className="relative text-gray-900">
               <button
                 onClick={() => setOpenSections(prev => ({ ...prev, sort: !prev.sort }))}
                 className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded text-sm hover:bg-gray-50 min-w-[160px] justify-between"
@@ -377,7 +377,7 @@ export default function ShopProductListing({
                       setSortOrder("");
                       setOpenSections(prev => ({ ...prev, sort: false }));
                     }}
-                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${
+                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 text-gray-900 ${
                       sortOrder === "" ? "font-medium" : ""
                     }`}
                     style={sortOrder === "" ? { color: brand.primary } : {}}
@@ -389,7 +389,7 @@ export default function ShopProductListing({
                       setSortOrder("price_asc");
                       setOpenSections(prev => ({ ...prev, sort: false }));
                     }}
-                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${
+                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 text-gray-900 ${
                       sortOrder === "price_asc" ? "font-medium" : ""
                     }`}
                     style={sortOrder === "price_asc" ? { color: brand.primary } : {}}
@@ -401,7 +401,7 @@ export default function ShopProductListing({
                       setSortOrder("price_desc");
                       setOpenSections(prev => ({ ...prev, sort: false }));
                     }}
-                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${
+                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 text-gray-900 ${
                       sortOrder === "price_desc" ? "font-medium" : ""
                     }`}
                     style={sortOrder === "price_desc" ? { color: brand.primary } : {}}

@@ -3,6 +3,7 @@ import Footer from "../../components/Footer";
 
 export default function OurStoryPage() {
   return (
+    <div className="bg-white">
     <div className="bg-white min-h-screen page-wrap">
       {/* Hero Section */}
       <section style={{ backgroundColor: brand.primary }} className="text-white py-20">
@@ -241,6 +242,7 @@ export default function OurStoryPage() {
       </div>
       
       <Footer />
+    </div>
     </div>
   );
 }

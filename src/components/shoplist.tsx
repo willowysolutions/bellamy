@@ -339,7 +339,7 @@ export default function ShopList() {
     <button
       onClick={onClick}
       className={`w-full text-left px-4 py-3 text-sm border-b border-gray-100 transition-colors ${
-        isSelected ? "text-white" : "text-gray-700 hover:bg-gray-50"
+        isSelected ? "text-gray-900" : "text-gray-700 hover:bg-gray-50"
       }`}
       style={isSelected ? { backgroundColor: brand.primary } : {}}
     >
@@ -399,7 +399,7 @@ export default function ShopList() {
                 onClick={() =>
                   setOpenSections((prev) => ({ ...prev, sort: !prev.sort }))
                 }
-                className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded text-sm hover:bg-gray-50 min-w-[160px] justify-between"
+                className="flex items-center text-gray-800 gap-2 px-4 py-2 border border-gray-300 rounded text-sm hover:bg-gray-50 min-w-[160px] justify-between"
               >
                 {sortOrder === "price_asc"
                   ? "Price: Low to High"
@@ -419,7 +419,7 @@ export default function ShopList() {
                       setSortOrder("");
                       setOpenSections((prev) => ({ ...prev, sort: false }));
                     }}
-                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${
+                    className={`w-full text-left px-4 py-2 text-gray-900 text-sm hover:bg-gray-50 ${
                       sortOrder === "" ? "font-medium" : ""
                     }`}
                     style={sortOrder === "" ? { color: brand.primary } : {}}
@@ -431,7 +431,7 @@ export default function ShopList() {
                       setSortOrder("price_asc");
                       setOpenSections((prev) => ({ ...prev, sort: false }));
                     }}
-                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${
+                    className={`w-full text-left px-4 text-gray-900 py-2 text-sm hover:bg-gray-50 ${
                       sortOrder === "price_asc" ? "font-medium" : ""
                     }`}
                     style={
@@ -445,7 +445,7 @@ export default function ShopList() {
                       setSortOrder("price_desc");
                       setOpenSections((prev) => ({ ...prev, sort: false }));
                     }}
-                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${
+                    className={`w-full text-left px-4 text-gray-900 py-2 text-sm hover:bg-gray-50 ${
                       sortOrder === "price_desc" ? "font-medium" : ""
                     }`}
                     style={

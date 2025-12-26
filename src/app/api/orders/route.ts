@@ -30,8 +30,8 @@ export async function POST(req: NextRequest) {
     let totalAmount = 0;
     let isDirectBuyNow = true; 
 
-    if (Array.isArray(items) && items.length > 1) {
-      isDirectBuyNow = false;
+    if (Array.isArray(items) && items.length > 0) {
+      isDirectBuyNow = items.length === 1;
       const variantIds = (items as OrderItemInput[]).map((i) => i.variantId);
       const variants = await prisma.productVariant.findMany({
         where: { id: { in: variantIds } },
